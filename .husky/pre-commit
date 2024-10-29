@@ -1,0 +1,15 @@
+echo "Running ESLint..."
+npm run lint:check
+echo "ESLint check completed successfully"
+
+echo "Running code formatting check..."
+npm run format:check
+echo "Code formatting check completed successfully"
+
+echo "Running TypeScript checking..."
+npm run type:check
+echo "TypeScript checking completed successfully"
+
+echo "Running build process..."
+npm run build
+echo "Build completed successfully"
