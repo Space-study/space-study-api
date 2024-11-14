@@ -1,57 +1,53 @@
-import { NestFactory } from '@nestjs/core';
+import 'dotenv/config';
+import { ClassSerializerInterceptor, ValidationPipe, VersioningType } from '@nestjs/common';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { NestFactory, Reflector } from '@nestjs/core';
+import { ConfigService } from '@nestjs/config';
+import { useContainer } from 'class-validator';
 import { AppModule } from './app.module';
 import helmet from 'helmet';
-import * as bodyParser from 'body-parser';
-import * as compression from 'compression';
-import * as cookieParser from 'cookie-parser';
-import { ValidationError } from 'class-validator';
-import { SwaggerConfig } from './config/swagger.config';
-import { Logger, ValidationPipe, BadRequestException } from '@nestjs/common';
-import { HttpExceptionFilter, HttpResponseInterceptor } from './common/http';
+import bodyParser from 'body-parser';
+import compression from 'compression';
+import cookieParser from 'cookie-parser';
+import { AllConfigType } from './config/config.type';
+import validationOptions from './utils/validation-options';
+import { ResolvePromisesInterceptor } from './utils/serializer.interceptor';
+import { LoggingInterceptor } from './config/infrastructure/logger/logger.interceptor';
+import { HttpExceptionFilter } from './config/infrastructure/exceptions/http-exception.filter';
+
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
-  app.setGlobalPrefix(AppModule.apiPrefix).enableCors({
-    origin: process.env.FRONT_END_HOST,
-    credentials: true,
-  });
+  const app = await NestFactory.create(AppModule, { cors: true });
+  useContainer(app.select(AppModule), { fallbackOnErrors: true });
+  const configService = app.get(ConfigService<AllConfigType>);
 
   app
     .use(helmet())
     .use(compression())
     .use(cookieParser())
+    .enableShutdownHooks()
     .use(bodyParser.json({ limit: '50mb' }))
-    .use(bodyParser.urlencoded({ limit: '50mb', extended: true }))
-    .useGlobalInterceptors(new HttpResponseInterceptor(AppModule.mode))
+    .useGlobalPipes(new ValidationPipe(validationOptions))
     .useGlobalFilters(new HttpExceptionFilter(AppModule.logger))
-    .useGlobalPipes(
-      new ValidationPipe({
-        exceptionFactory: (errors) => {
-          const formatError = (error: ValidationError) => {
-            if (error.children?.length) {
-              return {
-                field: error.property,
-                errors: error.children.map(formatError),
-              };
-            }
-            return {
-              field: error.property,
-              errors: Object.values(error.constraints ?? {}),
-            };
-          };
-          return new BadRequestException(
-            errors.map((error) => formatError(error)),
-          );
-        },
-        stopAtFirstError: false,
-        whitelist: true,
-        forbidNonWhitelisted: true,
-      }),
-    );
+    .useGlobalInterceptors(new LoggingInterceptor(AppModule.logger))
+    .use(bodyParser.urlencoded({ extended: true, limit: '50mb' }))
+    .enableVersioning({
+      type: VersioningType.URI,
+    })
+    .setGlobalPrefix(configService.getOrThrow('app.apiPrefix', { infer: true }), {
+      exclude: ['/'],
+    })
+    .useGlobalInterceptors(new ResolvePromisesInterceptor(), new ClassSerializerInterceptor(app.get(Reflector)));
 
-  SwaggerConfig(app, AppModule.apiVersion);
-  await app.listen(AppModule.port);
-  return AppModule.port;
+  const options = new DocumentBuilder()
+    .setTitle('Space Study API')
+    .setDescription('@Copyright 2024 Space Study Development Team')
+    .setVersion('1.0')
+    .addBearerAuth()
+    .build();
+
+  const document = SwaggerModule.createDocument(app, options);
+  SwaggerModule.setup('docs', app, document);
+
+  await app.listen(configService.getOrThrow('app.port', { infer: true }));
 }
-bootstrap().then((port: number) => {
-  Logger.log(`Server started on port ${port}`, 'Main');
-});
+void bootstrap();
