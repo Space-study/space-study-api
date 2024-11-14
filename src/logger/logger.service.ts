@@ -1,9 +1,10 @@
-import { Injectable } from '@nestjs/common';
+import { ILogger } from './logger.interface';
+import { Injectable, Logger } from '@nestjs/common';
 import * as winston from 'winston';
 import 'winston-daily-rotate-file';
 
 @Injectable()
-export class LoggerService {
+export class LoggerService implements ILogger {
   private logger: winston.Logger;
 
   constructor() {
@@ -36,16 +37,18 @@ export class LoggerService {
     });
   }
 
-  log(message: string) {
-    this.logger.log({ level: 'info', message });
+  log(context: string, message: string): void {
+    Logger.log(`[INFO] ${message}`, context);
+    this.logger.log({ level: 'info', context, message });
   }
 
-  error(message: string, trace: string) {
-    this.logger.error({ message, trace });
+  error(context: string, message: string, trace: string) {
+    Logger.error(`[ERROR] ${message}`, trace);
+    this.logger.error({ context, message, trace });
   }
 
-  warn(message: string) {
-    this.logger.warn({ level: 'warn', message });
+  warn(context: string, message: string, trace: string) {
+    this.logger.warn({ level: 'warn', context, message, trace });
   }
 
   debug(message: string) {

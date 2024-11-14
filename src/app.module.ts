@@ -5,8 +5,10 @@ import { LoggerService } from './logger/logger.service';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
-import DatabaseProviders from './database/database.provider';
 import { APILogger } from './config/morgan.config';
+import { BlogModule } from './modules/blog/blog.module';
+import { TypeOrmConfigModule } from './database/typeorm.module';
+
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -20,15 +22,15 @@ import { APILogger } from './config/morgan.config';
         limit: 10,
       },
     ]),
+    TypeOrmConfigModule,
+    BlogModule,
   ],
   controllers: [AppController],
   providers: [
     AppService,
     LoggerService,
     { provide: APP_GUARD, useClass: ThrottlerGuard },
-    ...DatabaseProviders,
   ],
-  exports: [...DatabaseProviders],
 })
 export class AppModule {
   static port: number;
