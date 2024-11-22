@@ -1,29 +1,42 @@
-import { CreateDateColumn, DeleteDateColumn, UpdateDateColumn } from 'typeorm';
+import {
+  CreateDateColumn,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 
-export abstract class BaseEntity {
+import type { AbstractDto } from '../dtos/abstract.dto';
+import { reorderColumns } from '../utils';
+
+export abstract class AbstractEntity<
+  DTO extends AbstractDto = AbstractDto,
+  O = never,
+> {
+  @PrimaryGeneratedColumn('uuid')
+  id!: Uuid;
+
   @CreateDateColumn({
-    name: 'created_at',
     type: 'timestamp',
-    default: () => 'CURRENT_TIMESTAMP',
-    update: false,
-    nullable: false,
   })
   createdAt!: Date;
 
   @UpdateDateColumn({
-    name: 'updated_at',
     type: 'timestamp',
-    default: () => 'CURRENT_TIMESTAMP',
-    onUpdate: 'CURRENT_TIMESTAMP',
-    nullable: false,
   })
   updatedAt!: Date;
 
-  @DeleteDateColumn({
-    name: 'deleted_at',
-    type: 'timestamp',
-    default: null,
-    nullable: true,
-  })
-  deletedAt?: Date;
+  constructor() {
+    reorderColumns(this.constructor, ['createdAt', 'updatedAt']);
+  }
+
+  toDto(options?: O): DTO {
+    const dtoClass = this.constructor.prototype.dtoClass;
+
+    if (!dtoClass) {
+      throw new Error(
+        `You need to use @UseDto on class (${this.constructor.name}) be able to call toDto function`,
+      );
+    }
+
+    return new dtoClass(this, options);
+  }
 }

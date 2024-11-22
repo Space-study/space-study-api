@@ -411,3 +411,7 @@ package-lock.json
 
 # log
 logs
+
+# Local History
+.history
+*.swc/

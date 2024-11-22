@@ -47,46 +47,52 @@ export class BlogService {
     }
   }
 
-  public async findOne(id: number): Promise<BlogResponseDto> {
+  public async findOne(uuid: Uuid): Promise<BlogResponseDto> {
     try {
-      const blog = await this.blogRepository.findOneById(id);
+      const blog = await this.blogRepository.findOneByUuid(uuid);
       if (!blog) {
-        throw new Error(`Blog with ID ${id} not found`);
+        throw new Error(`Blog with UUID ${uuid} not found`);
       }
       return new BlogResponseDto(blog);
     } catch (error) {
-      throw new Error(`Failed to find blog with ID ${id}: ${error.message}`);
+      throw new Error(
+        `Failed to find blog with UUID ${uuid}: ${error.message}`,
+      );
     }
   }
 
   public async update(
-    id: number,
+    uuid: Uuid,
     updateBlogDto: UpdateBlogDto,
   ): Promise<BlogResponseDto> {
     try {
       const existingBlog = await this.blogRepository.preload({
-        id,
+        id: uuid,
         ...updateBlogDto,
       });
       if (!existingBlog) {
-        throw new Error(`Blog with ID ${id} not found`);
+        throw new Error(`Blog with UUID ${uuid} not found`);
       }
       const updatedBlog = await this.blogRepository.save(existingBlog);
       return new BlogResponseDto(updatedBlog);
     } catch (error) {
-      throw new Error(`Failed to update blog with ID ${id}: ${error.message}`);
+      throw new Error(
+        `Failed to update blog with UUID ${uuid}: ${error.message}`,
+      );
     }
   }
 
-  public async remove(id: number): Promise<boolean> {
+  public async remove(uuid: Uuid): Promise<boolean> {
     try {
-      const isRemoved = await this.blogRepository.permanentlyRemove(id);
+      const isRemoved = await this.blogRepository.permanentlyRemove(uuid);
       if (!isRemoved) {
-        throw new Error(`Blog with ID ${id} could not be deleted`);
+        throw new Error(`Blog with UUID ${uuid} could not be deleted`);
       }
       return isRemoved;
     } catch (error) {
-      throw new Error(`Failed to delete blog with ID ${id}: ${error.message}`);
+      throw new Error(
+        `Failed to delete blog with UUID ${uuid}: ${error.message}`,
+      );
     }
   }
 }

@@ -10,11 +10,7 @@ import { FindAllResponse } from '../types';
 
 import { BaseInterfaceRepository } from './base.interface.repository';
 
-interface HasId {
-  id: number;
-}
-
-export abstract class BaseAbstractRepository<T extends HasId>
+export abstract class BaseAbstractRepository<T>
   implements BaseInterfaceRepository<T>
 {
   private entity: Repository<T>;
@@ -35,10 +31,10 @@ export abstract class BaseAbstractRepository<T extends HasId>
     return this.entity.create(data);
   }
 
-  public async findOneById(id: any): Promise<T> {
+  public async findOneByUuid(uuid: Uuid): Promise<T> {
     const options: FindOptionsWhere<T> = {
-      id: id,
-    };
+      uuid: uuid,
+    } as unknown as FindOptionsWhere<T>;
     return await this.entity.findOneBy(options);
   }
 
@@ -65,13 +61,13 @@ export abstract class BaseAbstractRepository<T extends HasId>
     };
   }
 
-  public async softDelete(id: number): Promise<boolean> {
-    const result = await this.entity.softDelete(id);
+  public async softDelete(uuid: Uuid): Promise<boolean> {
+    const result = await this.entity.softDelete(uuid);
     return result.affected > 0;
   }
 
-  public async permanentlyRemove(id: number): Promise<boolean> {
-    const result = await this.entity.delete(id);
+  public async permanentlyRemove(uuid: Uuid): Promise<boolean> {
+    const result = await this.entity.delete(uuid);
     return result.affected > 0;
   }
 

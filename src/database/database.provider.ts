@@ -1,4 +1,5 @@
 import { TypeOrmModuleOptions } from '@nestjs/typeorm';
+import { SnakeNamingStrategy } from 'src/snake-naming.strategy';
 import { DataSource } from 'typeorm';
 
 export type DataSourceName = string | 'default';
@@ -16,19 +17,11 @@ export const getTypeOrmModuleOptions =
       migrations: ['dist/database/migrations/*{.ts,.js}'],
       synchronize: false,
       migrationsRun: process.env.NODE_ENV === 'development',
+      namingStrategy: new SnakeNamingStrategy(),
       logging: true,
       logger: 'advanced-console',
     };
   };
-
-export const addTransactionalDataSource = (dataSource: DataSource) => {
-  dataSources.set(dataSource?.name ? dataSource.name : 'default', dataSource);
-  dataSource['@transactional/data-source'] = dataSource?.name
-    ? dataSource.name
-    : 'default';
-
-  return dataSource;
-};
 
 export const dataSources = new Map<DataSourceName, DataSource>();
 

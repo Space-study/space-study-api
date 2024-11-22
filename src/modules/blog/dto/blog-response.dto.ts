@@ -1,21 +1,18 @@
-import { Blog } from '../entities/blog.entity';
+import { BlogEntity } from '../entities/blog.entity';
+import { AbstractDto } from '../../../common/dtos/abstract.dto';
+import { ApiPropertyOptional } from '@nestjs/swagger';
 
-export class BlogResponseDto {
-  id: number;
+export class BlogResponseDto extends AbstractDto {
+  @ApiPropertyOptional()
   title: string;
-  content: string;
-  author: string;
-  createdAt: Date;
-  updatedAt: Date;
-  deletedAt?: Date;
 
-  constructor(blog: Blog) {
-    this.id = blog.id;
-    this.title = blog.title;
-    this.content = blog.content;
-    this.author = blog.author;
-    this.createdAt = blog.baseEntity.createdAt;
-    this.updatedAt = blog.baseEntity.updatedAt;
-    this.deletedAt = blog.baseEntity.deletedAt;
+  @ApiPropertyOptional()
+  content: string;
+
+  @ApiPropertyOptional()
+  author: string;
+
+  constructor(blogEntity: BlogEntity) {
+    super(blogEntity);
   }
 }

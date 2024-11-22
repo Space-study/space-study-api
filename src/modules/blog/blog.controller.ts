@@ -22,6 +22,8 @@ import {
   ApiOkResponse,
   ApiOperation,
 } from '@nestjs/swagger';
+import { FindAllResponse } from 'src/common/types';
+import { UUIDParam } from 'src/common/decorators/http.decorators';
 
 @Controller('blog')
 export class BlogController {
@@ -51,7 +53,7 @@ export class BlogController {
     @Query('filter') filter?: string | undefined,
     @Query('take') take?: number,
     @Query('skip') skip?: number,
-  ): Promise<{ count: number; items: BlogResponseDto[] }> {
+  ): Promise<FindAllResponse<BlogResponseDto>> {
     const parsedFilter = filter ? JSON.parse(filter) : undefined;
     const options = { take, skip };
     return this.blogService.findAll(parsedFilter, options);
@@ -64,7 +66,7 @@ export class BlogController {
   @ApiBadRequestResponse({ description: 'Invalid blog ID' })
   @ApiInternalServerErrorResponse({ description: 'Server error' })
   @Get(':id')
-  findOne(@Param('id') id: number): Promise<BlogResponseDto> {
+  findOne(@UUIDParam('id') id: Uuid): Promise<BlogResponseDto> {
     return this.blogService.findOne(id);
   }
 
@@ -76,7 +78,7 @@ export class BlogController {
   @ApiInternalServerErrorResponse({ description: 'Server error' })
   @Patch(':id')
   updateBlog(
-    @Param('id') id: number,
+    @UUIDParam('id') id: Uuid,
     @Body(ValidationPipe) updateBlogDto: UpdateBlogDto,
   ): Promise<BlogResponseDto> {
     return this.blogService.update(id, updateBlogDto);
@@ -88,7 +90,7 @@ export class BlogController {
   @ApiBadRequestResponse({ description: 'Invalid blog ID' })
   @ApiInternalServerErrorResponse({ description: 'Server error' })
   @Delete(':id')
-  removeBlog(@Param('id') id: number): Promise<boolean> {
+  removeBlog(@UUIDParam('id') id: Uuid): Promise<boolean> {
     return this.blogService.remove(id);
   }
 }

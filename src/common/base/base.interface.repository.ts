@@ -35,11 +35,11 @@ export interface BaseInterfaceRepository<T> {
   saveMany(data: DeepPartial<T>[]): Promise<T[]>;
 
   /**
-   * Finds an entity by its ID
-   * @param id The ID to search for
+   * Finds an entity by its UUID
+   * @param uuid The UUID to search for
    * @returns Promise resolving to the found entity
    */
-  findOneById(id: number): Promise<T>;
+  findOneByUuid(uuid: Uuid): Promise<T>;
 
   /**
    * Finds an entity by custom conditions
@@ -58,17 +58,17 @@ export interface BaseInterfaceRepository<T> {
 
   /**
    * Removes an entity from the database
-   * @param data The entity to remove
+   * @param uuid The UUID of the entity to remove
    * @returns Promise resolving to the removed entity
    */
-  softDelete(id: number): Promise<boolean>;
+  softDelete(uuid: Uuid): Promise<boolean>;
 
   /**
    * Permanently removes an entity from the database
-   * @param id The ID of the entity to remove
+   * @param uuid The UUID of the entity to remove
    * @returns Promise resolving to true if the entity was removed, false otherwise
    */
-  permanentlyRemove(id: number): Promise<boolean>;
+  permanentlyRemove(uuid: Uuid): Promise<boolean>;
 
   /**
    * Finds entities with their relations loaded

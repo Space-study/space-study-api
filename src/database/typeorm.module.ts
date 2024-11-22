@@ -1,22 +1,26 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { Blog } from 'src/modules/blog/entities/blog.entity';
-import {
-  addTransactionalDataSource,
-  getTypeOrmModuleOptions,
-} from './database.provider';
+import { BlogEntity } from 'src/modules/blog/entities/blog.entity';
+import { getTypeOrmModuleOptions } from './database.provider';
 import { DataSource } from 'typeorm';
+import { addTransactionalDataSource } from 'typeorm-transactional';
 
 @Module({
   imports: [
     TypeOrmModule.forRootAsync({
       imports: [],
       useFactory: getTypeOrmModuleOptions,
-      dataSourceFactory: async (options) => {
-        return addTransactionalDataSource(new DataSource(options));
+      dataSourceFactory: (options) => {
+        if (!options) {
+          throw new Error('Invalid options passed');
+        }
+
+        return Promise.resolve(
+          addTransactionalDataSource(new DataSource(options)),
+        );
       },
     }),
-    TypeOrmModule.forFeature([Blog]),
+    TypeOrmModule.forFeature([BlogEntity]),
   ],
   exports: [TypeOrmModule],
 })

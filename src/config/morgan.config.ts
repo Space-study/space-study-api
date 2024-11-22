@@ -1,12 +1,12 @@
 import { Injectable, NestMiddleware } from '@nestjs/common';
-import * as morgan from 'morgan';
-import * as fs from 'fs';
-import * as path from 'path';
+import morgan from 'morgan';
+import fs from 'fs';
+import path from 'path';
 
 @Injectable()
 export class APILogger implements NestMiddleware {
   private accessLogStream = fs.createWriteStream(
-    path.join(__dirname, '..', '..', 'logs/access.log'),
+    path.join(process.cwd(), 'logs/access.log'),
     { flags: 'a' },
   );
 

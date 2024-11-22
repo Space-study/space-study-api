@@ -1,13 +1,11 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
-import { BaseEntity } from '../../../common/base/base.entity';
-import { Property } from 'src/common/decorators/property.decorator';
-import { PropertyType } from 'src/common/enums/property.enum';
+import { Column, Entity } from 'typeorm';
+import { AbstractEntity } from '../../../common/base/base.entity';
+import { UseDto } from '../../../common/decorators/use-dto.decorator';
+import { BlogResponseDto } from '../dto/blog-response.dto';
 
 @Entity()
-export class Blog {
-  @PrimaryGeneratedColumn()
-  id: number;
-
+@UseDto(BlogResponseDto)
+export class BlogEntity extends AbstractEntity<BlogResponseDto> {
   @Column()
   title: string;
 
@@ -16,8 +14,4 @@ export class Blog {
 
   @Column()
   author: string;
-
-  @Column(() => BaseEntity, { prefix: false })
-  @Property(PropertyType.Order)
-  baseEntity: BaseEntity;
 }
