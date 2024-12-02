@@ -1,7 +1,7 @@
 import { registerAs } from '@nestjs/config';
 import { AppConfig } from './app-config.type';
 import validateConfig from '.././utils/validate-config';
-import { IsEnum, IsInt, IsOptional, IsString, IsUrl, Max, Min } from 'class-validator';
+import { IsBoolean, IsEnum, IsInt, IsOptional, IsString, IsUrl, Max, Min } from 'class-validator';
 
 enum Environment {
   Development = 'development',
@@ -39,6 +39,18 @@ class EnvironmentVariablesValidator {
   @IsString()
   @IsOptional()
   APP_HEADER_LANGUAGE: string;
+
+  @IsString()
+  @IsOptional()
+  ZIPKIN_URL: string;
+
+  @IsString()
+  @IsOptional()
+  PROMETHUES_URL: string;
+
+  @IsBoolean()
+  @IsOptional()
+  IS_PRODUCTION: boolean;
 }
 
 export default registerAs<AppConfig>('app', () => {
@@ -58,5 +70,8 @@ export default registerAs<AppConfig>('app', () => {
     apiPrefix: process.env.API_PREFIX || 'api',
     fallbackLanguage: process.env.APP_FALLBACK_LANGUAGE || 'en',
     headerLanguage: process.env.APP_HEADER_LANGUAGE || 'x-custom-lang',
+    zipkinUrl: process.env.ZIPKIN_URL || 'http://localhost:9411',
+    promethuesUrl: process.env.PROMETHUES_URL || 'http://localhost:9092',
+    isProduction: process.env.NODE_ENV === Environment.Production,
   };
 });

@@ -34,7 +34,10 @@ lerna-debug.log*
 !.vscode/launch.json
 !.vscode/extensions.json
 
+data
 .data
 /files
 .env
 /ormconfig.json
+yarn.lock
+package.json

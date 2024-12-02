@@ -1,4 +1,4 @@
-# NestJS Boilerplate Documentation
+# Space Study API Documentation
 
 ---
 

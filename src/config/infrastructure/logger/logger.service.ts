@@ -33,6 +33,10 @@ export class LoggerService implements ILogger {
     });
   }
 
+  info(context: string, message: string): void {
+    Logger.log(`${message}`, context);
+  }
+
   log(context: string, message: string): void {
     Logger.log(`[INFO] ${message}`, context);
     this.logger.log({ level: 'info', context, message });
@@ -43,7 +47,7 @@ export class LoggerService implements ILogger {
     this.logger.error({ context, message, trace });
   }
 
-  warn(context: string, message: string, trace: string) {
+  warn(context: string, message: string, trace: object) {
     this.logger.warn({ level: 'warn', context, message, trace });
   }
 
