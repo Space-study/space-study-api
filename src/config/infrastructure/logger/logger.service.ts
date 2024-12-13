@@ -38,12 +38,10 @@ export class LoggerService implements ILogger {
   }
 
   log(context: string, message: string): void {
-    Logger.log(`[INFO] ${message}`, context);
     this.logger.log({ level: 'info', context, message });
   }
 
   error(context: string, message: string, trace: string) {
-    Logger.error(`[ERROR] ${message}`, trace);
     this.logger.error({ context, message, trace });
   }
 
@@ -53,5 +51,9 @@ export class LoggerService implements ILogger {
 
   debug(message: string) {
     this.logger.debug({ level: 'debug', message });
+  }
+
+  setGlobalParameters(message: string, traceid: object) {
+    this.logger.log({ level: 'info', message, traceid });
   }
 }

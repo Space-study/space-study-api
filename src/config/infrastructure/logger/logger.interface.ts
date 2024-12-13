@@ -4,4 +4,5 @@ export interface ILogger {
   error(context: string, message: string, trace: string): void;
   warn(context: string, message: string, trace: object): void;
   debug(message: string): void;
+  setGlobalParameters(message: string, input: object): void;
 }

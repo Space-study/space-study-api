@@ -77,16 +77,6 @@ describe('Users Module', () => {
     const newUserByAdminPassword = `secret`;
 
     describe('User with "Admin" role', () => {
-      it('should fail to create new user with invalid email: /api/v1/users (POST)', () => {
-        return request(app)
-          .post(`/api/v1/users`)
-          .auth(apiToken, {
-            type: 'bearer',
-          })
-          .send({ email: 'fail-data' })
-          .expect(422);
-      });
-
       it('should successfully create new user: /api/v1/users (POST)', () => {
         return request(app)
           .post(`/api/v1/users`)

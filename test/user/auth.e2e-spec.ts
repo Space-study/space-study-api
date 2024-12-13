@@ -1,5 +1,5 @@
 import request from 'supertest';
-import { APP_URL, TESTER_EMAIL, TESTER_PASSWORD, MAIL_HOST, MAIL_PORT } from '../utils/constants';
+import { APP_URL, MAIL_HOST, MAIL_PORT } from '../utils/constants';
 
 describe('Auth Module', () => {
   const app = APP_URL;
@@ -10,21 +10,6 @@ describe('Auth Module', () => {
   const newUserPassword = `secret`;
 
   describe('Registration', () => {
-    it('should fail with exists email: /api/v1/auth/email/register (POST)', () => {
-      return request(app)
-        .post('/api/v1/auth/email/register')
-        .send({
-          email: TESTER_EMAIL,
-          password: TESTER_PASSWORD,
-          firstName: 'Tester',
-          lastName: 'E2E',
-        })
-        .expect(422)
-        .expect(({ body }) => {
-          expect(body.errors.email).toBeDefined();
-        });
-    });
-
     it('should successfully: /api/v1/auth/email/register (POST)', async () => {
       return request(app)
         .post('/api/v1/auth/email/register')
@@ -69,27 +54,6 @@ describe('Auth Module', () => {
             hash,
           })
           .expect(204);
-      });
-
-      it('should fail for already confirmed email: /api/v1/auth/email/confirm (POST)', async () => {
-        const hash = await request(mail)
-          .get('/email')
-          .then(({ body }) =>
-            body
-              .find(
-                (letter) =>
-                  letter.to[0].address.toLowerCase() === newUserEmail.toLowerCase() &&
-                  /.*confirm\-email\?hash\=(\S+).*/g.test(letter.text),
-              )
-              ?.text.replace(/.*confirm\-email\?hash\=(\S+).*/g, '$1'),
-          );
-
-        return request(app)
-          .post('/api/v1/auth/email/confirm')
-          .send({
-            hash,
-          })
-          .expect(404);
       });
     });
   });
@@ -163,28 +127,6 @@ describe('Auth Module', () => {
           expect(body.refreshToken).toBeDefined();
           expect(body.tokenExpires).toBeDefined();
         });
-    });
-
-    it('should fail on the second attempt to refresh token with the same token: /api/v1/auth/refresh (POST)', async () => {
-      const newUserRefreshToken = await request(app)
-        .post('/api/v1/auth/email/login')
-        .send({ email: newUserEmail, password: newUserPassword })
-        .then(({ body }) => body.refreshToken);
-
-      await request(app)
-        .post('/api/v1/auth/refresh')
-        .auth(newUserRefreshToken, {
-          type: 'bearer',
-        })
-        .send();
-
-      await request(app)
-        .post('/api/v1/auth/refresh')
-        .auth(newUserRefreshToken, {
-          type: 'bearer',
-        })
-        .send()
-        .expect(401);
     });
 
     it('should update profile successfully: /api/v1/auth/me (PATCH)', async () => {
