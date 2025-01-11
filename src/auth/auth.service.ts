@@ -28,6 +28,7 @@ import { Session } from '../session/domain/session';
 import { SessionService } from '../session/session.service';
 import { StatusEnum } from '../statuses/statuses.enum';
 import { User } from '../users/domain/user';
+import { MailerService } from '@nestjs-modules/mailer';
 
 @Injectable()
 export class AuthService {
@@ -37,6 +38,7 @@ export class AuthService {
     private sessionService: SessionService,
     private mailService: MailService,
     private configService: ConfigService<AllConfigType>,
+    private readonly mailerService: MailerService,
   ) {}
 
   async validateLogin(loginDto: AuthEmailLoginDto): Promise<LoginResponseDto> {
@@ -207,12 +209,18 @@ export class AuthService {
       },
     );
 
-    await this.mailService.userSignUp({
-      to: dto.email,
-      data: {
-        hash,
-      },
-    });
+    this.mailerService
+      .sendMail({
+        to: user?.email || undefined,
+        subject: 'Activate your account',
+        template: 'activation.hbs',
+        context: {
+          name: user.firstName + ' ' + user.lastName,
+          confirmationUrl: `${process.env.FRONTEND_DOMAIN}/confirm-email?token=${hash}`,
+        },
+      })
+      .then(() => {})
+      .catch(() => {});
   }
 
   async confirmEmail(hash: string): Promise<void> {
