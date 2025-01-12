@@ -93,7 +93,7 @@ const infrastructureDatabaseModule = TypeOrmModule.forRootAsync({
         defaults: {
           from: '"No Reply" <no-reply@localhost>',
         },
-        // preview: true,
+        preview: true,
         template: {
           dir: process.cwd() + '/src/mail/mail-templates/',
           adapter: new HandlebarsAdapter(),
