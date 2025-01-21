@@ -1,4 +1,9 @@
-import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common';
+import {
+  CallHandler,
+  ExecutionContext,
+  Injectable,
+  NestInterceptor,
+} from '@nestjs/common';
 import opentelemetry, {
   Attributes,
   AttributeValue,
@@ -26,7 +31,10 @@ export class TracingInterceptor implements NestInterceptor {
     this.tracer = opentelemetry.trace.getTracer(name, version);
   }
 
-  intercept(executionContext: ExecutionContext, next: CallHandler): Observable<unknown> {
+  intercept(
+    executionContext: ExecutionContext,
+    next: CallHandler,
+  ): Observable<unknown> {
     const request = executionContext.switchToHttp().getRequest();
     const res = executionContext.switchToHttp().getResponse();
 
@@ -41,12 +49,17 @@ export class TracingInterceptor implements NestInterceptor {
         span,
         tracer: this.tracer,
         tracerId: requestId,
-        axios: (options?: Omit<AxiosRequestConfig, 'headers'>): AxiosInstance => {
+        axios: (
+          options?: Omit<AxiosRequestConfig, 'headers'>,
+        ): AxiosInstance => {
           request.headers.traceid = requestId;
 
           const http = axios.create({
             ...options,
-            headers: { traceid: request.id, authorization: request.headers.authorization },
+            headers: {
+              traceid: request.id,
+              authorization: request.headers.authorization,
+            },
           });
 
           axiosBetterStacktrace(http);

@@ -38,7 +38,15 @@ const infrastructureDatabaseModule = TypeOrmModule.forRootAsync({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      load: [databaseConfig, authConfig, appConfig, mailConfig, fileConfig, facebookConfig, googleConfig],
+      load: [
+        databaseConfig,
+        authConfig,
+        appConfig,
+        mailConfig,
+        fileConfig,
+        facebookConfig,
+        googleConfig,
+      ],
       envFilePath: ['.env'],
     }),
     infrastructureDatabaseModule,

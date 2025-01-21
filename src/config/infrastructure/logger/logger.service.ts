@@ -29,7 +29,11 @@ export class LoggerService implements ILogger {
       ...config,
     });
     this.logger = winston.createLogger({
-      transports: [new winston.transports.Console(), transportError, transportInfo],
+      transports: [
+        new winston.transports.Console(),
+        transportError,
+        transportInfo,
+      ],
     });
   }
 
