@@ -6,12 +6,12 @@ import { Music } from '../../domain/entities/music.entity';
 export class GetMusicUseCase {
   constructor(
     @Inject('MusicRepository')
-    private readonly musicRepository: MusicRepository) {}
+    private readonly musicRepository: MusicRepository,
+  ) {}
 
   async execute(id: number): Promise<Music> {
     const music = await this.musicRepository.findById(id);
     if (!music) throw new NotFoundException('Music not found');
-    
     return music;
   }
 

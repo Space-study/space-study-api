@@ -20,7 +20,7 @@ import { MinioService } from './infrastructure/services/minio.service';
     GetMusicUseCase,
     UpdateMusicUseCase,
     DeleteMusicUseCase,
-    MinioService
+    MinioService,
   ],
   exports: [
     MusicService,

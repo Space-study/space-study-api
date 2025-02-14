@@ -9,11 +9,13 @@ export class CreateMusicUseCase {
   constructor(
     @Inject('MusicRepository')
     private readonly musicRepository: MusicRepository,
-    private readonly minioService: MinioService
+    private readonly minioService: MinioService,
+  ) {}
 
-  ) { }
-
-  async execute(file: Express.Multer.File, createMusicDto: CreateMusicDto): Promise<Music> {
+  async execute(
+    file: Express.Multer.File,
+    createMusicDto: CreateMusicDto,
+  ): Promise<Music> {
     const fileUrl = await this.minioService.uploadFile(file); // Upload file to MinIO
 
     const music = new Music(

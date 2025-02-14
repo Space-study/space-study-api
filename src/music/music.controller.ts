@@ -3,7 +3,6 @@ import {
   Controller,
   Get,
   Post,
-  Put,
   Delete,
   Body,
   Param,
@@ -13,7 +12,6 @@ import {
 } from '@nestjs/common';
 import { MusicService } from './application/services/music.service';
 import { UpdateMusicDto } from './application/dto/update-music.dto';
-import { CreateMusicResponse } from './application/responses/create-music.response';
 import { GetMusicResponse } from './application/responses/get-music.response';
 import { GetAllMusicResponse } from './application/responses/get-all-musics.response';
 import { UpdateMusicResponse } from './application/responses/update-music.response';
@@ -33,9 +31,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 })
 @ApiTags('Music')
 export class MusicController {
-  constructor(
-    private readonly musicService: MusicService,
-  ) { }
+  constructor(private readonly musicService: MusicService) {}
 
   @Post()
   @ApiConsumes('multipart/form-data')
@@ -53,7 +49,10 @@ export class MusicController {
   })
   @ApiCreatedResponse({ description: 'Music successfully created.' })
   @UseInterceptors(FileInterceptor('file'))
-  async uploadMusic(@UploadedFile() file: Express.Multer.File, @Body() body: any) {
+  async uploadMusic(
+    @UploadedFile() file: Express.Multer.File,
+    @Body() body: any,
+  ) {
     return this.musicService.create(file, body);
   }
 
