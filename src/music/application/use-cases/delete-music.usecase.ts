@@ -7,11 +7,10 @@ export class DeleteMusicUseCase {
     @Inject('MusicRepository')
     private readonly musicRepository: MusicRepository,
   ) {}
-
+  
   async execute(id: number): Promise<void> {
     const music = await this.musicRepository.findById(id);
     if (!music) throw new NotFoundException('Music not found');
-
     return this.musicRepository.delete(id);
   }
 }
