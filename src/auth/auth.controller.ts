@@ -67,6 +67,12 @@ export class AuthController {
     return this.service.confirmNewEmail(confirmEmailDto.hash);
   }
 
+  @Post('email/confirm-forgot-password')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async confirmForgotPassword(@Body() confirmEmailDto: AuthConfirmEmailDto): Promise<void> {
+    return this.service.confirmForgotPasswordToken(confirmEmailDto.hash);
+  }
+
   @Post('forgot/password')
   @HttpCode(HttpStatus.NO_CONTENT)
   async forgotPassword(

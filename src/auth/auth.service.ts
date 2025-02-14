@@ -334,7 +334,9 @@ export class AuthService {
       infer: true,
     });
 
-    const tokenExpires = Date.now() + ms(tokenExpiresIn);
+    if (!tokenExpiresIn || !this.configService.get('auth.forgotSecret', { infer: true })) {
+      throw new Error('Forgot password configuration missing.');
+    }
 
     const hash = await this.jwtService.signAsync(
       {
@@ -348,13 +350,44 @@ export class AuthService {
       },
     );
 
-    await this.mailService.forgotPassword({
-      to: email,
-      data: {
-        hash,
-        tokenExpires,
-      },
-    });
+    try {
+      await this.mailerService.sendMail({
+        to: user?.email || undefined,
+        subject: 'Reset your password',
+        template: 'reset-password.hbs',
+        context: {
+          name: `${user.firstName} ${user.lastName}`,
+          confirmationUrl: `${process.env.FRONTEND_DOMAIN}/forgot-password/reset?token=${hash}`,
+        },
+      });
+    } catch (error) {
+      console.error('Failed to send forgot password email:', error);
+      throw new Error('Failed to send reset password email.');
+    }
+  }
+
+  async confirmForgotPasswordToken(hash: string): Promise<void> {
+    try {
+      // Verify the token using the secret
+      const secret = this.configService.getOrThrow('auth.forgotSecret', {
+        infer: true,
+      });
+
+      const payload = await this.jwtService.verifyAsync(hash, {
+        secret,
+      });
+
+      // Ensure the payload contains the expected information
+      if (!payload?.forgotUserId) {
+        throw new UnauthorizedException('Invalid token.');
+      }
+
+      // Return the user ID from the token
+      return payload.forgotUserId;
+    } catch (error) {
+      console.error('Token verification failed:', error);
+      throw new UnauthorizedException('Invalid or expired token.');
+    }
   }
 
   async resetPassword(hash: string, password: string): Promise<void> {
