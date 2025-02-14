@@ -1,4 +1,9 @@
-import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common';
+import {
+  CallHandler,
+  ExecutionContext,
+  Injectable,
+  NestInterceptor,
+} from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { LoggerService } from '../logger/logger.service';
 import { UUIDUtils } from '@/utils/uuid';
@@ -7,7 +12,10 @@ import { UUIDUtils } from '@/utils/uuid';
 export class HttpLoggerInterceptor implements NestInterceptor {
   constructor(private readonly logger: LoggerService) {}
 
-  intercept(executionContext: ExecutionContext, next: CallHandler): Observable<unknown> {
+  intercept(
+    executionContext: ExecutionContext,
+    next: CallHandler,
+  ): Observable<unknown> {
     const context = `${executionContext.getClass().name}/${executionContext.getHandler().name}`;
 
     const request = executionContext.switchToHttp().getRequest();

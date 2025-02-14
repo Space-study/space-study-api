@@ -14,15 +14,20 @@ type AdditionalAxiosErrorInput = {
 };
 
 export class AxiosUtils {
-  static interceptAxiosResponseError = (error: AxiosError<AdditionalAxiosErrorInput>) => {
+  static interceptAxiosResponseError = (
+    error: AxiosError<AdditionalAxiosErrorInput>,
+  ) => {
     error.stack = error?.stack?.replace(
       /AxiosError.*node:internal\/process\/task_queues:[0-9]+:[0-9]+\).*axiosBetterStacktrace.ts:[0-9]+:[0-9]+\)/g,
       '',
     );
 
-    const status = [error?.response?.data?.code, error?.response?.data?.error?.code, error?.response?.status, 500].find(
-      Boolean,
-    );
+    const status = [
+      error?.response?.data?.code,
+      error?.response?.data?.error?.code,
+      error?.response?.status,
+      500,
+    ].find(Boolean);
 
     const message = [
       error?.response?.data?.description,
@@ -33,16 +38,25 @@ export class AxiosUtils {
 
     Object.assign(error, { message });
     Object.assign(error, { status });
-    Object.assign(error, { curl: AxiosConverter.getCurl(error, ['password', 'cpf']) });
+    Object.assign(error, {
+      curl: AxiosConverter.getCurl(error, ['password', 'cpf']),
+    });
   };
 
-  static requestRetry = ({ axios, logger, status: statusRetry = [503, 422, 408] }: RequestRetry) => {
+  static requestRetry = ({
+    axios,
+    logger,
+    status: statusRetry = [503, 422, 408],
+  }: RequestRetry) => {
     axiosRetry(axios, {
       shouldResetTimeout: true,
 
       retryDelay: (retryCount, axiosError: any) => {
         logger.warn('Trace', `retry attempt: ${retryCount}`, {
-          statusText: [axiosError.response?.data?.['message'], axiosError.message].find(Boolean),
+          statusText: [
+            axiosError.response?.data?.['message'],
+            axiosError.message,
+          ].find(Boolean),
           status: [
             axiosError.response?.status,
             axiosError.status,
@@ -59,7 +73,9 @@ export class AxiosUtils {
           error.status = 408;
         }
 
-        const status = [error?.response?.status, error?.status, 500].find(Boolean) as number;
+        const status = [error?.response?.status, error?.status, 500].find(
+          Boolean,
+        ) as number;
         return statusRetry.includes(status);
       },
     });

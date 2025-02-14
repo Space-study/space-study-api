@@ -40,7 +40,12 @@ export const SortHttpSchema = z
         .split(',')
         .map((s) => {
           const [field, order] = s.split(':');
-          const sorted = [field.trim(), SortEnum[(order.trim().toLowerCase() || 'asc') as keyof typeof SortEnum]];
+          const sorted = [
+            field.trim(),
+            SortEnum[
+              (order.trim().toLowerCase() || 'asc') as keyof typeof SortEnum
+            ],
+          ];
           return sorted;
         }),
     );
@@ -49,7 +54,10 @@ export const SortHttpSchema = z
   });
 
 export const SortSchema = z.object({
-  sort: z.record(z.string().trim().min(1), z.nativeEnum(SortEnum)).nullable().default({}),
+  sort: z
+    .record(z.string().trim().min(1), z.nativeEnum(SortEnum))
+    .nullable()
+    .default({}),
 });
 
 export type SortInput = z.infer<typeof SortSchema>;

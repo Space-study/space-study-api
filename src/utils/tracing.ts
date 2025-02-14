@@ -1,6 +1,11 @@
 import { ClientRequest, IncomingMessage, ServerResponse } from 'node:http';
 
-import { diag, DiagConsoleLogger, DiagLogLevel, Span } from '@opentelemetry/api';
+import {
+  diag,
+  DiagConsoleLogger,
+  DiagLogLevel,
+  Span,
+} from '@opentelemetry/api';
 import { OTLPMetricExporter } from '@opentelemetry/exporter-metrics-otlp-http';
 import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-proto';
 import { HttpInstrumentation } from '@opentelemetry/instrumentation-http';
@@ -36,14 +41,24 @@ const sdk = new NodeSDK({
   metricReader,
   instrumentations: [
     new HttpInstrumentation({
-      responseHook: (span: Span | any, res: IncomingMessage | ServerResponse | any) => {
+      responseHook: (
+        span: Span | any,
+        res: IncomingMessage | ServerResponse | any,
+      ) => {
         if (span['parentSpanId']) {
           span.updateName(updateSpanName(span, res['req']));
         }
       },
 
-      requestHook: (span: Span | any, request: ClientRequest | IncomingMessage | any) => {
-        const id = [request['id'], request['traceid'], request['headers']?.traceid].find(Boolean);
+      requestHook: (
+        span: Span | any,
+        request: ClientRequest | IncomingMessage | any,
+      ) => {
+        const id = [
+          request['id'],
+          request['traceid'],
+          request['headers']?.traceid,
+        ].find(Boolean);
         if (!id) {
           request['headers'].traceid = UUIDUtils.create();
           request['id'] = request['headers'].traceid;
@@ -80,12 +95,17 @@ process.on('SIGTERM', () => {
     .finally(() => process.exit(0));
 });
 
-const updateSpanName = (span: Span | any, request: ClientRequest | IncomingMessage | any) => {
+const updateSpanName = (
+  span: Span | any,
+  request: ClientRequest | IncomingMessage | any,
+) => {
   if (span['parentSpanId']) {
     return `${span['name']} => ${request['protocol']}//${request['host']}${getPathWithoutUUID(request['path'])}`;
   }
 
-  return `${span['name']} => ${[request['headers']?.origin, request['host'], request['headers']?.host].find(
-    Boolean,
-  )}${getPathWithoutUUID(request['url'])}`;
+  return `${span['name']} => ${[
+    request['headers']?.origin,
+    request['host'],
+    request['headers']?.host,
+  ].find(Boolean)}${getPathWithoutUUID(request['url'])}`;
 };
