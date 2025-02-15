@@ -42,7 +42,8 @@ describe('Auth Module', () => {
             body
               .find(
                 (letter) =>
-                  letter.to[0].address.toLowerCase() === newUserEmail.toLowerCase() &&
+                  letter.to[0].address.toLowerCase() ===
+                    newUserEmail.toLowerCase() &&
                   /.*confirm\-email\?hash\=(\S+).*/g.test(letter.text),
               )
               ?.text.replace(/.*confirm\-email\?hash\=(\S+).*/g, '$1'),
@@ -215,7 +216,8 @@ describe('Auth Module', () => {
           body
             .find((letter) => {
               return (
-                letter.to[0].address.toLowerCase() === newUserNewEmail.toLowerCase() &&
+                letter.to[0].address.toLowerCase() ===
+                  newUserNewEmail.toLowerCase() &&
                 /.*confirm\-new\-email\?hash\=(\S+).*/g.test(letter.text)
               );
             })

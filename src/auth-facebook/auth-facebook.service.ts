@@ -10,7 +10,9 @@ import { AllConfigType } from '../config/config.type';
 export class AuthFacebookService {
   constructor(private configService: ConfigService<AllConfigType>) {}
 
-  async getProfileByToken(loginDto: AuthFacebookLoginDto): Promise<SocialInterface> {
+  async getProfileByToken(
+    loginDto: AuthFacebookLoginDto,
+  ): Promise<SocialInterface> {
     const fb: Facebook = new Facebook({
       appId: this.configService.get('facebook.appId', {
         infer: true,
@@ -23,9 +25,14 @@ export class AuthFacebookService {
     fb.setAccessToken(loginDto.accessToken);
 
     const data: FacebookInterface = await new Promise((resolve) => {
-      fb.api('/me', 'get', { fields: 'id,last_name,email,first_name' }, (response) => {
-        resolve(response);
-      });
+      fb.api(
+        '/me',
+        'get',
+        { fields: 'id,last_name,email,first_name' },
+        (response) => {
+          resolve(response);
+        },
+      );
     });
 
     return {

@@ -15,10 +15,7 @@ const compat = new FlatCompat({
 });
 
 export default [
-  ...compat.extends(
-    'plugin:@typescript-eslint/recommended',
-    'plugin:prettier/recommended',
-  ),
+  ...compat.extends('plugin:@typescript-eslint/recommended', 'plugin:prettier/recommended'),
   {
     plugins: {
       '@typescript-eslint': tsEslintPlugin,
@@ -55,8 +52,7 @@ export default [
             'Add "{ infer: true }" to configService.get() for correct typechecking. Example: configService.get("database.port", { infer: true })',
         },
         {
-          selector:
-            'CallExpression[callee.name=it][arguments.0.value!=/^should/]',
+          selector: 'CallExpression[callee.name=it][arguments.0.value!=/^should/]',
           message: '"it" should start with "should"',
         },
       ],

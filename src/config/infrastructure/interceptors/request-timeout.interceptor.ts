@@ -1,4 +1,9 @@
-import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common';
+import {
+  CallHandler,
+  ExecutionContext,
+  Injectable,
+  NestInterceptor,
+} from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { Observable, throwError, TimeoutError } from 'rxjs';
 import { catchError, timeout } from 'rxjs/operators';
@@ -14,10 +19,10 @@ export class RequestTimeoutInterceptor implements NestInterceptor {
   ) {}
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {
-    const requestTimeout = this.reflector.getAllAndOverride<number>('request-timeout', [
-      context.getHandler(),
-      context.getClass(),
-    ]);
+    const requestTimeout = this.reflector.getAllAndOverride<number>(
+      'request-timeout',
+      [context.getHandler(), context.getClass()],
+    );
 
     const request = context.switchToHttp().getRequest();
     const response = context.switchToHttp().getResponse();

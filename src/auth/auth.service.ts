@@ -71,7 +71,10 @@ export class AuthService {
       });
     }
 
-    const isValidPassword = await bcrypt.compare(loginDto.password, user.password);
+    const isValidPassword = await bcrypt.compare(
+      loginDto.password,
+      user.password,
+    );
 
     if (!isValidPassword) {
       throw new UnprocessableEntityException({
@@ -82,7 +85,10 @@ export class AuthService {
       });
     }
 
-    const hash = crypto.createHash('sha256').update(randomStringGenerator()).digest('hex');
+    const hash = crypto
+      .createHash('sha256')
+      .update(randomStringGenerator())
+      .digest('hex');
 
     const session = await this.sessionService.create({
       user,
@@ -104,7 +110,10 @@ export class AuthService {
     };
   }
 
-  async validateSocialLogin(authProvider: string, socialData: SocialInterface): Promise<LoginResponseDto> {
+  async validateSocialLogin(
+    authProvider: string,
+    socialData: SocialInterface,
+  ): Promise<LoginResponseDto> {
     let user: NullableType<User> = null;
     const socialEmail = socialData.email?.toLowerCase();
     let userByEmail: NullableType<User> = null;
@@ -157,7 +166,10 @@ export class AuthService {
       });
     }
 
-    const hash = crypto.createHash('sha256').update(randomStringGenerator()).digest('hex');
+    const hash = crypto
+      .createHash('sha256')
+      .update(randomStringGenerator())
+      .digest('hex');
 
     const session = await this.sessionService.create({
       user,
@@ -247,7 +259,10 @@ export class AuthService {
 
     const user = await this.usersService.findById(userId);
 
-    if (!user || user?.status?.id?.toString() !== StatusEnum.inactive.toString()) {
+    if (
+      !user ||
+      user?.status?.id?.toString() !== StatusEnum.inactive.toString()
+    ) {
       throw new NotFoundException({
         status: HttpStatus.NOT_FOUND,
         error: `notFound`,
@@ -421,7 +436,10 @@ export class AuthService {
     return this.usersService.findById(userJwtPayload.id);
   }
 
-  async update(userJwtPayload: JwtPayloadType, userDto: AuthUpdateDto): Promise<NullableType<User>> {
+  async update(
+    userJwtPayload: JwtPayloadType,
+    userDto: AuthUpdateDto,
+  ): Promise<NullableType<User>> {
     const currentUser = await this.usersService.findById(userJwtPayload.id);
 
     if (!currentUser) {
@@ -452,7 +470,10 @@ export class AuthService {
         });
       }
 
-      const isValidOldPassword = await bcrypt.compare(userDto.oldPassword, currentUser.password);
+      const isValidOldPassword = await bcrypt.compare(
+        userDto.oldPassword,
+        currentUser.password,
+      );
 
       if (!isValidOldPassword) {
         throw new UnprocessableEntityException({
@@ -512,7 +533,9 @@ export class AuthService {
     return this.usersService.findById(userJwtPayload.id);
   }
 
-  async refreshToken(data: Pick<JwtRefreshPayloadType, 'sessionId' | 'hash'>): Promise<Omit<LoginResponseDto, 'user'>> {
+  async refreshToken(
+    data: Pick<JwtRefreshPayloadType, 'sessionId' | 'hash'>,
+  ): Promise<Omit<LoginResponseDto, 'user'>> {
     const session = await this.sessionService.findById(data.sessionId);
 
     if (!session) {
@@ -523,7 +546,10 @@ export class AuthService {
       throw new UnauthorizedException();
     }
 
-    const hash = crypto.createHash('sha256').update(randomStringGenerator()).digest('hex');
+    const hash = crypto
+      .createHash('sha256')
+      .update(randomStringGenerator())
+      .digest('hex');
 
     const user = await this.usersService.findById(session.user.id);
 

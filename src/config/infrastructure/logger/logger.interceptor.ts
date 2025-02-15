@@ -1,12 +1,20 @@
 import { LoggerService } from './logger.service';
-import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common';
+import {
+  CallHandler,
+  ExecutionContext,
+  Injectable,
+  NestInterceptor,
+} from '@nestjs/common';
 import { Observable } from 'rxjs';
 
 @Injectable()
 export class LoggingInterceptor implements NestInterceptor {
   constructor(private readonly logger: LoggerService) {}
 
-  intercept(context: ExecutionContext, next: CallHandler<any>): Observable<any> | Promise<Observable<any>> {
+  intercept(
+    context: ExecutionContext,
+    next: CallHandler<any>,
+  ): Observable<any> | Promise<Observable<any>> {
     const contextType = context.getType<'http' | 'rmq'>();
 
     if (contextType === 'rmq') {
@@ -19,7 +27,10 @@ export class LoggingInterceptor implements NestInterceptor {
     const ip = this.getIP(request);
     const userAgent = this.getUserAgent(request);
 
-    this.logger.log(`Incoming Request on ${request.path}`, `method=${request.method} ip=${ip} user-agent=${userAgent}`);
+    this.logger.log(
+      `Incoming Request on ${request.path}`,
+      `method=${request.method} ip=${ip} user-agent=${userAgent}`,
+    );
 
     return next.handle().pipe();
   }
