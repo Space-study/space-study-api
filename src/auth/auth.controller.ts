@@ -10,6 +10,8 @@ import {
   Patch,
   Delete,
   SerializeOptions,
+  Req,
+  Res,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { ApiBearerAuth, ApiOkResponse, ApiTags } from '@nestjs/swagger';
@@ -24,6 +26,8 @@ import { LoginResponseDto } from './dto/login-response.dto';
 import { NullableType } from '../utils/types/nullable.type';
 import { User } from '../users/domain/user';
 import { RefreshResponseDto } from './dto/refresh-response.dto';
+import { GoogleAuthGuard } from './guards/google-auth/google-auth.guard';
+import { Public } from './decorators/public.decorator';
 
 @ApiTags('Auth')
 @Controller({
@@ -33,6 +37,7 @@ import { RefreshResponseDto } from './dto/refresh-response.dto';
 export class AuthController {
   constructor(private readonly service: AuthService) {}
 
+  @Public()
   @SerializeOptions({
     groups: ['me'],
   })
@@ -45,12 +50,14 @@ export class AuthController {
     return this.service.validateLogin(loginDto);
   }
 
+  @Public()
   @Post('email/register')
   @HttpCode(HttpStatus.NO_CONTENT)
   async register(@Body() createUserDto: AuthRegisterLoginDto): Promise<void> {
     return this.service.register(createUserDto);
   }
 
+  @Public()
   @Post('email/confirm')
   @HttpCode(HttpStatus.NO_CONTENT)
   async confirmEmail(
@@ -59,6 +66,7 @@ export class AuthController {
     return this.service.confirmEmail(confirmEmailDto.hash);
   }
 
+  @Public()
   @Post('email/confirm/new')
   @HttpCode(HttpStatus.NO_CONTENT)
   async confirmNewEmail(
@@ -67,12 +75,16 @@ export class AuthController {
     return this.service.confirmNewEmail(confirmEmailDto.hash);
   }
 
+  @Public()
   @Post('email/confirm-forgot-password')
   @HttpCode(HttpStatus.NO_CONTENT)
-  async confirmForgotPassword(@Body() confirmEmailDto: AuthConfirmEmailDto): Promise<void> {
+  async confirmForgotPassword(
+    @Body() confirmEmailDto: AuthConfirmEmailDto,
+  ): Promise<void> {
     return this.service.confirmForgotPasswordToken(confirmEmailDto.hash);
   }
 
+  @Public()
   @Post('forgot/password')
   @HttpCode(HttpStatus.NO_CONTENT)
   async forgotPassword(
@@ -81,6 +93,7 @@ export class AuthController {
     return this.service.forgotPassword(forgotPasswordDto.email);
   }
 
+  @Public()
   @Post('reset/password')
   @HttpCode(HttpStatus.NO_CONTENT)
   resetPassword(@Body() resetPasswordDto: AuthResetPasswordDto): Promise<void> {
@@ -154,5 +167,19 @@ export class AuthController {
   @HttpCode(HttpStatus.NO_CONTENT)
   public async delete(@Request() request): Promise<void> {
     return this.service.softDelete(request.user);
+  }
+  @Public()
+  @UseGuards(GoogleAuthGuard)
+  @Get('google/login')
+  googleLogin() {}
+
+  @Public()
+  @UseGuards(GoogleAuthGuard)
+  @Get('google/callback')
+  async googleCallback(@Req() req, @Res() res) {
+    const response = await this.service.login(req.user.id);
+    res.redirect(
+      `http://localhost:3000/auth/login?token=${response.accessToken}`,
+    );
   }
 }

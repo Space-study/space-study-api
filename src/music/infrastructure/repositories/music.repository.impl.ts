@@ -13,7 +13,7 @@ export class MusicRepositoryImpl implements MusicRepository {
   ) {}
 
   async create(music: Music): Promise<Music> {
-    console.log(music, "music");
+    console.log(music, 'music');
     const saved = await this.repo.save(music);
     return new Music(
       saved.music_id,

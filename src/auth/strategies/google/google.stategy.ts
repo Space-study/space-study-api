@@ -1,0 +1,40 @@
+import { Inject, Injectable } from '@nestjs/common';
+import { PassportStrategy } from '@nestjs/passport';
+import { Strategy, VerifyCallback } from 'passport-google-oauth20';
+import googleOathConfig from '../../config/google/google-oath.config';
+import { ConfigType } from '@nestjs/config';
+import { AuthService } from '../../auth.service';
+
+@Injectable()
+export class GoogleStrategy extends PassportStrategy(Strategy) {
+  constructor(
+    @Inject(googleOathConfig.KEY)
+    googleConfiguration: ConfigType<typeof googleOathConfig>,
+    private authService: AuthService,
+  ) {
+    super({
+      clientID: googleConfiguration.clientID,
+      clientSecret: googleConfiguration.clientSecret,
+      callbackURL: googleConfiguration.callbackURL,
+      scope: ['email', 'profile'],
+    });
+  }
+
+  async validate(
+    _accessToken: string,
+    _refreshToken: string,
+    profile: any,
+    done: VerifyCallback,
+  ) {
+    // done(null, { profile });
+    console.log({ profile }, _accessToken, _refreshToken);
+    const user = await this.authService.validateGoogleUser({
+      email: profile.emails[0].value,
+      firstName: profile.name.givenName,
+      lastName: profile.name.familyName,
+      photo: profile._json.picture,
+      password: '',
+    });
+    done(null, user);
+  }
+}
