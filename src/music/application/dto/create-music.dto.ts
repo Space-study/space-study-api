@@ -1,7 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsNumber, IsString } from 'class-validator';
 
-
 export class CreateMusicDto {
   @ApiProperty({
     example: 1,

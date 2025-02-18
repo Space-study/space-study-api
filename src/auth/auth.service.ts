@@ -41,7 +41,7 @@ export class AuthService {
     private mailService: MailService,
     private configService: ConfigService<AllConfigType>,
     private readonly mailerService: MailerService,
-  ) { }
+  ) {}
 
   async validateLogin(loginDto: AuthEmailLoginDto): Promise<LoginResponseDto> {
     const user = await this.usersService.findByEmail(loginDto.email);
@@ -233,8 +233,8 @@ export class AuthService {
           confirmationUrl: `${process.env.FRONTEND_DOMAIN}/confirm-email?token=${hash}`,
         },
       })
-      .then(() => { })
-      .catch(() => { });
+      .then(() => {})
+      .catch(() => {});
   }
 
   async confirmEmail(hash: string): Promise<void> {
@@ -670,7 +670,7 @@ export class AuthService {
 
   async login(
     userId: number,
-    provider?: AuthProvidersEnum
+    provider?: AuthProvidersEnum,
   ): Promise<LoginResponseDto> {
     const user = await this.usersService.findById(userId);
 
@@ -714,7 +714,7 @@ export class AuthService {
       hash,
     });
 
-    console.log(user.role)
+    console.log(user.role);
 
     return {
       refreshToken,

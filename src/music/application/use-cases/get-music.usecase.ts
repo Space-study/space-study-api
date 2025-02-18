@@ -12,10 +12,7 @@ export class GetMusicUseCase {
   async execute(id: number): Promise<Music> {
     const music = await this.musicRepository.findById(id);
     if (!music) throw new NotFoundException('Music not found');
-<<<<<<< HEAD
 
-=======
->>>>>>> c73b98b8c91de213f04bd99370555d147ff97925
     return music;
   }
 

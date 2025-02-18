@@ -31,17 +31,10 @@ export class MinioService {
    */
   async uploadFile(file: Express.Multer.File): Promise<string> {
     const fileName = `${Date.now()}_${file.originalname}`;
-<<<<<<< HEAD
-
     // Convert file buffer to stream
     const fileStream = new stream.PassThrough();
     fileStream.end(file.buffer);
 
-=======
-    // Convert file buffer to stream
-    const fileStream = new stream.PassThrough();
-    fileStream.end(file.buffer);
->>>>>>> c73b98b8c91de213f04bd99370555d147ff97925
     await this.minioClient.putObject(
       this.bucketName,
       fileName,
@@ -51,10 +44,7 @@ export class MinioService {
         'Content-Type': file.mimetype,
       },
     );
-<<<<<<< HEAD
 
-=======
->>>>>>> c73b98b8c91de213f04bd99370555d147ff97925
     return `${process.env.MINIO_PUBLIC_URL || 'http://localhost:9001'}/${this.bucketName}/${fileName}`;
   }
 
