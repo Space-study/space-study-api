@@ -35,7 +35,7 @@ import { Public } from './decorators/public.decorator';
   version: '1',
 })
 export class AuthController {
-  constructor(private readonly service: AuthService) {}
+  constructor(private readonly service: AuthService) { }
 
   @Public()
   @SerializeOptions({
@@ -171,7 +171,7 @@ export class AuthController {
   @Public()
   @UseGuards(GoogleAuthGuard)
   @Get('google/login')
-  googleLogin() {}
+  googleLogin() { }
 
   @Public()
   @UseGuards(GoogleAuthGuard)
@@ -179,7 +179,7 @@ export class AuthController {
   async googleCallback(@Req() req, @Res() res) {
     const response = await this.service.login(req.user.id);
     res.redirect(
-      `http://localhost:3000/auth/login?token=${response.accessToken}`,
+      `http://localhost:3000/auth/login?token=${response.token}`,
     );
   }
 }

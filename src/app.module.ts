@@ -27,6 +27,7 @@ import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
 import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
 import { MusicModule } from './music/music.module';
+import { BackgroundModule } from './background/background.module';
 
 const infrastructureDatabaseModule = TypeOrmModule.forRootAsync({
   useClass: TypeOrmConfigService,
@@ -115,6 +116,7 @@ const infrastructureDatabaseModule = TypeOrmModule.forRootAsync({
     }),
     HomeModule,
     MusicModule,
+    BackgroundModule,
   ],
   providers: [
     {

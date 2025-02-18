@@ -41,7 +41,7 @@ export class AuthService {
     private mailService: MailService,
     private configService: ConfigService<AllConfigType>,
     private readonly mailerService: MailerService,
-  ) {}
+  ) { }
 
   async validateLogin(loginDto: AuthEmailLoginDto): Promise<LoginResponseDto> {
     const user = await this.usersService.findByEmail(loginDto.email);
@@ -233,8 +233,8 @@ export class AuthService {
           confirmationUrl: `${process.env.FRONTEND_DOMAIN}/confirm-email?token=${hash}`,
         },
       })
-      .then(() => {})
-      .catch(() => {});
+      .then(() => { })
+      .catch(() => { });
   }
 
   async confirmEmail(hash: string): Promise<void> {
@@ -668,33 +668,59 @@ export class AuthService {
     return { id: user.id };
   }
 
-  async login(userId: number) {
-    // const payload: AuthJwtPayload = { sub: userId };
-    // const token = this.jwtService.sign(payload);
-    // const refreshToken = this.jwtService.sign(payload, this.refreshTokenConfig);
-    const { accessToken, refreshToken } = await this.generateTokens(userId);
+  async login(
+    userId: number,
+    provider?: AuthProvidersEnum
+  ): Promise<LoginResponseDto> {
+    const user = await this.usersService.findById(userId);
+
+    if (!user) {
+      throw new UnauthorizedException('User not found!');
+    }
+
+    // Verify provider consistency if specified
+    if (provider && user.provider !== provider) {
+      throw new UnprocessableEntityException({
+        status: HttpStatus.UNPROCESSABLE_ENTITY,
+        errors: {
+          provider: `User is not registered via ${provider}`,
+        },
+      });
+    }
+
+    // Update status and role
+    user.status = { id: StatusEnum.active };
+    // user.role = { id: RoleEnum.user };
+
+    await this.usersService.update(user.id, user);
+
+    // Generate session hash
+    const hash = crypto
+      .createHash('sha256')
+      .update(randomStringGenerator())
+      .digest('hex');
+
+    // Create new session
+    const session = await this.sessionService.create({
+      user,
+      hash,
+    });
+
+    // Get tokens using common token generator
+    const { token, refreshToken, tokenExpires } = await this.getTokensData({
+      id: user.id,
+      role: user.role,
+      sessionId: session.id,
+      hash,
+    });
+
+    console.log(user.role)
 
     return {
-      id: userId,
-      accessToken,
       refreshToken,
+      token,
+      tokenExpires,
+      user,
     };
-  }
-
-  private generateTokens(userId: number) {
-    const payload = { sub: userId };
-    const accessToken = this.jwtService.sign(payload, {
-      secret: this.configService.getOrThrow('auth.secret', { infer: true }),
-      expiresIn: this.configService.getOrThrow('auth.expires', { infer: true }),
-    });
-    const refreshToken = this.jwtService.sign(payload, {
-      secret: this.configService.getOrThrow('auth.refreshSecret', {
-        infer: true,
-      }),
-      expiresIn: this.configService.getOrThrow('auth.refreshExpires', {
-        infer: true,
-      }),
-    });
-    return { accessToken, refreshToken };
   }
 }

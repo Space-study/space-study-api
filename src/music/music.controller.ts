@@ -12,7 +12,6 @@ import {
 } from '@nestjs/common';
 import { MusicService } from './application/services/music.service';
 import { UpdateMusicDto } from './application/dto/update-music.dto';
-import { CreateMusicResponse } from './application/responses/create-music.response';
 import { GetMusicResponse } from './application/responses/get-music.response';
 import { GetAllMusicResponse } from './application/responses/get-all-musics.response';
 import { UpdateMusicResponse } from './application/responses/update-music.response';
@@ -50,10 +49,18 @@ export class MusicController {
   })
   @ApiCreatedResponse({ description: 'Music successfully created.' })
   @UseInterceptors(FileInterceptor('file'))
+<<<<<<< HEAD
+=======
+
+>>>>>>> c73b98b8c91de213f04bd99370555d147ff97925
   async uploadMusic(
     @UploadedFile() file: Express.Multer.File,
     @Body() body: any,
   ) {
+<<<<<<< HEAD
+=======
+
+>>>>>>> c73b98b8c91de213f04bd99370555d147ff97925
     return this.musicService.create(file, body);
   }
 
