@@ -49,12 +49,10 @@ export class MusicController {
   })
   @ApiCreatedResponse({ description: 'Music successfully created.' })
   @UseInterceptors(FileInterceptor('file'))
-
   async uploadMusic(
     @UploadedFile() file: Express.Multer.File,
     @Body() body: any,
   ) {
-
     return this.musicService.create(file, body);
   }
 

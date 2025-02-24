@@ -13,6 +13,7 @@ export class UpdateMusicUseCase {
   async execute(id: number, updateMusicDto: UpdateMusicDto): Promise<Music> {
     const existingMusic = await this.musicRepository.findById(id);
     if (!existingMusic) throw new NotFoundException('Music not found');
+
     return this.musicRepository.update(id, updateMusicDto);
   }
 }

@@ -30,7 +30,7 @@ import { UpdateBackgroundResponse } from './application/responses/update-backgro
 })
 @ApiTags('Backgrounds')
 export class BackgroundController {
-  constructor(private readonly backgroundService: BackgroundService) { }
+  constructor(private readonly backgroundService: BackgroundService) {}
 
   @Post()
   @ApiConsumes('multipart/form-data')
@@ -49,7 +49,10 @@ export class BackgroundController {
   })
   @ApiCreatedResponse({ description: 'Music successfully created.' })
   @UseInterceptors(FileInterceptor('file'))
-  async uploadMusic(@UploadedFile() file: Express.Multer.File, @Body() body: any) {
+  async uploadMusic(
+    @UploadedFile() file: Express.Multer.File,
+    @Body() body: any,
+  ) {
     return this.backgroundService.create(file, body);
   }
 

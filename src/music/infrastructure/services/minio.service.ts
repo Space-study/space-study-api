@@ -34,6 +34,7 @@ export class MinioService {
     // Convert file buffer to stream
     const fileStream = new stream.PassThrough();
     fileStream.end(file.buffer);
+
     await this.minioClient.putObject(
       this.bucketName,
       fileName,
@@ -43,6 +44,7 @@ export class MinioService {
         'Content-Type': file.mimetype,
       },
     );
+
     return `${process.env.MINIO_PUBLIC_URL || 'http://localhost:9001'}/${this.bucketName}/${fileName}`;
   }
 

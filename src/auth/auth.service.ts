@@ -9,7 +9,7 @@ import ms from 'ms';
 import crypto from 'crypto';
 import { randomStringGenerator } from '@nestjs/common/utils/random-string-generator.util';
 import { JwtService } from '@nestjs/jwt';
-import bcrypt from 'bcryptjs';
+import bcrypt, { compare } from 'bcryptjs';
 import { AuthEmailLoginDto } from './dto/auth-email-login.dto';
 import { AuthUpdateDto } from './dto/auth-update.dto';
 import { AuthProvidersEnum } from './auth-providers.enum';
@@ -29,6 +29,8 @@ import { SessionService } from '../session/session.service';
 import { StatusEnum } from '../statuses/statuses.enum';
 import { User } from '../users/domain/user';
 import { MailerService } from '@nestjs-modules/mailer';
+import { AuthGoogleDto } from './dto/auth-google-create.dto';
+import { CurrentUser } from './strategies/types/google/current-user';
 
 @Injectable()
 export class AuthService {
@@ -334,7 +336,10 @@ export class AuthService {
       infer: true,
     });
 
-    if (!tokenExpiresIn || !this.configService.get('auth.forgotSecret', { infer: true })) {
+    if (
+      !tokenExpiresIn ||
+      !this.configService.get('auth.forgotSecret', { infer: true })
+    ) {
       throw new Error('Forgot password configuration missing.');
     }
 
@@ -629,6 +634,93 @@ export class AuthService {
       token,
       refreshToken,
       tokenExpires,
+    };
+  }
+
+  //-------- Google ------------//
+
+  async validateJwtUser(userId: string) {
+    const user = await this.usersService.findById(userId);
+    if (!user) throw new UnauthorizedException('User not found!');
+    const currentUser: CurrentUser = {
+      id: user.id.toString(),
+      role: user.role,
+    };
+    return currentUser;
+  }
+
+  async validateGoogleUser(googleUser: AuthGoogleDto) {
+    const user = await this.usersService.findByEmail(googleUser.email);
+    if (user) return user;
+    return await this.usersService.create(googleUser);
+  }
+
+  async validateUser(email: string, password: string) {
+    const user = await this.usersService.findByEmail(email);
+    if (!user) throw new UnauthorizedException('User not found!');
+    if (!user.password) {
+      throw new UnauthorizedException('User does not have a password set.');
+    }
+    const isPasswordMatch = await compare(password, user.password);
+    if (!isPasswordMatch)
+      throw new UnauthorizedException('Invalid credentials');
+
+    return { id: user.id };
+  }
+
+  async login(
+    userId: number,
+    provider?: AuthProvidersEnum,
+  ): Promise<LoginResponseDto> {
+    const user = await this.usersService.findById(userId);
+
+    if (!user) {
+      throw new UnauthorizedException('User not found!');
+    }
+
+    // Verify provider consistency if specified
+    if (provider && user.provider !== provider) {
+      throw new UnprocessableEntityException({
+        status: HttpStatus.UNPROCESSABLE_ENTITY,
+        errors: {
+          provider: `User is not registered via ${provider}`,
+        },
+      });
+    }
+
+    // Update status and role
+    user.status = { id: StatusEnum.active };
+    // user.role = { id: RoleEnum.user };
+
+    await this.usersService.update(user.id, user);
+
+    // Generate session hash
+    const hash = crypto
+      .createHash('sha256')
+      .update(randomStringGenerator())
+      .digest('hex');
+
+    // Create new session
+    const session = await this.sessionService.create({
+      user,
+      hash,
+    });
+
+    // Get tokens using common token generator
+    const { token, refreshToken, tokenExpires } = await this.getTokensData({
+      id: user.id,
+      role: user.role,
+      sessionId: session.id,
+      hash,
+    });
+
+    console.log(user.role);
+
+    return {
+      refreshToken,
+      token,
+      tokenExpires,
+      user,
     };
   }
 }
