@@ -23,6 +23,7 @@ import { UpdateBackgroundDto } from './application/dto/update-background.dto';
 import { GetBackgroundResponse } from './application/responses/get-background.response';
 import { GetAllBackgroundsResponse } from './application/responses/get-all-backgrounds.response';
 import { UpdateBackgroundResponse } from './application/responses/update-background.response';
+import { Public } from '../auth/decorators/public.decorator';
 
 @Controller({
   path: 'backgrounds',
@@ -32,6 +33,7 @@ import { UpdateBackgroundResponse } from './application/responses/update-backgro
 export class BackgroundController {
   constructor(private readonly backgroundService: BackgroundService) {}
 
+  @Public()
   @Post()
   @ApiConsumes('multipart/form-data')
   @ApiBody({
@@ -56,6 +58,7 @@ export class BackgroundController {
     return this.backgroundService.create(file, body);
   }
 
+  @Public()
   @Get()
   @ApiOkResponse({
     description: 'Successfully retrieved all backgrounds.',
@@ -65,6 +68,7 @@ export class BackgroundController {
     return this.backgroundService.findAll();
   }
 
+  @Public()
   @Get(':id')
   @ApiOkResponse({
     description: 'Successfully retrieved the background record.',
@@ -75,6 +79,7 @@ export class BackgroundController {
     return this.backgroundService.findById(id);
   }
 
+  @Public()
   @Patch(':id')
   @ApiOkResponse({
     description: 'Background successfully updated.',
@@ -88,6 +93,7 @@ export class BackgroundController {
     return this.backgroundService.update(id, updateBackgroundDto);
   }
 
+  @Public()
   @Delete(':id')
   @ApiOkResponse({ description: 'Background successfully deleted.' })
   @ApiNotFoundResponse({ description: 'Background not found.' })

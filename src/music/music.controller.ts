@@ -24,6 +24,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { Public } from '../auth/decorators/public.decorator';
 
 @Controller({
   path: 'music',
@@ -33,6 +34,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 export class MusicController {
   constructor(private readonly musicService: MusicService) {}
 
+  @Public()
   @Post()
   @ApiConsumes('multipart/form-data')
   @ApiBody({
@@ -56,6 +58,7 @@ export class MusicController {
     return this.musicService.create(file, body);
   }
 
+  @Public()
   @Get()
   @ApiOkResponse({
     description: 'Successfully retrieved all music records.',
@@ -65,6 +68,7 @@ export class MusicController {
     return this.musicService.findAll();
   }
 
+  @Public()
   @Get(':id')
   @ApiOkResponse({
     description: 'Successfully retrieved the music record.',
@@ -75,6 +79,7 @@ export class MusicController {
     return this.musicService.findById(id);
   }
 
+  @Public()
   @Patch(':id')
   @ApiOkResponse({
     description: 'Music successfully updated.',
@@ -88,6 +93,7 @@ export class MusicController {
     return this.musicService.update(id, updateMusicDto);
   }
 
+  @Public()
   @Delete(':id')
   @ApiOkResponse({ description: 'Music successfully deleted.' })
   @ApiNotFoundResponse({ description: 'Music not found.' })
