@@ -36,8 +36,11 @@ const infrastructureDatabaseModule = TypeOrmModule.forRootAsync({
   },
 });
 
+import { ChatsModule } from './chats/chats.module';
+
 @Module({
   imports: [
+    ChatsModule,
     ConfigModule.forRoot({
       isGlobal: true,
       load: [

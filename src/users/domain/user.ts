@@ -3,6 +3,8 @@ import { FileType } from '../../files/domain/file';
 import { Role } from '../../roles/domain/role';
 import { Status } from '../../statuses/domain/status';
 import { ApiProperty } from '@nestjs/swagger';
+import { Chat } from '../../chats/domain/chat';
+import { Message } from '../../chats/domain/message';
 
 const idType = Number;
 
@@ -71,4 +73,13 @@ export class User {
 
   @ApiProperty()
   deletedAt: Date;
+
+  @ApiProperty({ type: () => [Chat] })
+  participatedChats?: Chat[];
+
+  @ApiProperty({ type: () => [Chat] })
+  ownedChats?: Chat[];
+
+  @ApiProperty({ type: () => [Message] })
+  messages?: Message[];
 }
