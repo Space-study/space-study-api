@@ -4,6 +4,8 @@ import { RoleEntity } from '../../../../../roles/infrastructure/persistence/rela
 import { StatusEntity } from '../../../../../statuses/infrastructure/persistence/relational/entities/status.entity';
 import { User } from '../../../../domain/user';
 import { UserEntity } from '../entities/user.entity';
+import { ChatMapper } from '../../../../../chats/infrastructure/persistence/relational/mappers/chat.mapper';
+import { MessageMapper } from '../../../../../chats/infrastructure/persistence/relational/mappers/message.mapper';
 
 export class UserMapper {
   static toDomain(raw: UserEntity): User {
@@ -23,6 +25,21 @@ export class UserMapper {
     domainEntity.createdAt = raw.createdAt;
     domainEntity.updatedAt = raw.updatedAt;
     domainEntity.deletedAt = raw.deletedAt;
+    if (raw.participatedChats) {
+      domainEntity.participatedChats = raw.participatedChats.map((chat) =>
+        ChatMapper.toDomain(chat),
+      );
+    }
+    if (raw.ownedChats) {
+      domainEntity.ownedChats = raw.ownedChats.map((chat) =>
+        ChatMapper.toDomain(chat),
+      );
+    }
+    if (raw.messages) {
+      domainEntity.messages = raw.messages.map((message) =>
+        MessageMapper.toDomain(message),
+      );
+    }
     return domainEntity;
   }
 
@@ -67,6 +84,21 @@ export class UserMapper {
     persistenceEntity.createdAt = domainEntity.createdAt;
     persistenceEntity.updatedAt = domainEntity.updatedAt;
     persistenceEntity.deletedAt = domainEntity.deletedAt;
+    if (domainEntity.participatedChats) {
+      persistenceEntity.participatedChats = domainEntity.participatedChats.map(
+        (chat) => ChatMapper.toPersistence(chat),
+      );
+    }
+    if (domainEntity.ownedChats) {
+      persistenceEntity.ownedChats = domainEntity.ownedChats.map((chat) =>
+        ChatMapper.toPersistence(chat),
+      );
+    }
+    if (domainEntity.messages) {
+      persistenceEntity.messages = domainEntity.messages.map((message) =>
+        MessageMapper.toPersistence(message),
+      );
+    }
     return persistenceEntity;
   }
 }
