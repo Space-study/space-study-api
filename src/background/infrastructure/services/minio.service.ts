@@ -17,7 +17,7 @@ export class MinioService {
       secretKey: process.env.MINIO_SECRET_KEY,
     });
 
-    this.createBucketIfNotExists();
+    void this.createBucketIfNotExists();
   }
 
   private async createBucketIfNotExists() {
@@ -47,7 +47,7 @@ export class MinioService {
       },
     );
 
-    return `${process.env.MINIO_PUBLIC_URL || 'http://localhost:9001'}/${this.bucketName}/${fileName}`;
+    return `${process.env.MINIO_PUBLIC_URL || 'http://localhost:9090'}/${this.bucketName}/${fileName}`;
   }
 
   /**
