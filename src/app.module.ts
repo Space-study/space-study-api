@@ -28,6 +28,9 @@ import { APP_GUARD } from '@nestjs/core';
 import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
 import { MusicModule } from './music/music.module';
 import { BackgroundModule } from './background/background.module';
+import { BlogModule } from './blog/blog.module';
+import { CategoryModule } from './category/category.module';
+import { BlogCommentModule } from './blog-comment/blog-comment.module';
 
 const infrastructureDatabaseModule = TypeOrmModule.forRootAsync({
   useClass: TypeOrmConfigService,
@@ -36,8 +39,11 @@ const infrastructureDatabaseModule = TypeOrmModule.forRootAsync({
   },
 });
 
+import { ChatsModule } from './chats/chats.module';
+
 @Module({
   imports: [
+    ChatsModule,
     ConfigModule.forRoot({
       isGlobal: true,
       load: [
@@ -117,6 +123,9 @@ const infrastructureDatabaseModule = TypeOrmModule.forRootAsync({
     HomeModule,
     MusicModule,
     BackgroundModule,
+    BlogModule,
+    CategoryModule,
+    BlogCommentModule,
   ],
   providers: [
     {
