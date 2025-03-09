@@ -4,8 +4,7 @@ import { IsNumber, IsString, IsOptional } from 'class-validator';
 export class CreateBlogDto {
   @ApiProperty({
     example: 1,
-    description: 'The ID of the author who created the blog',
-    type: Number,
+    description: 'The ID of the author',
   })
   @IsNumber()
   author_id: number;

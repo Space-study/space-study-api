@@ -4,6 +4,7 @@ import { UpdateBlogDto } from './dto/update-blog.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Blog } from './entities/blog.entity';
 import { Repository } from 'typeorm';
+import { AdminUpdateBlogDto } from './dto/admin-update-blog';
 
 @Injectable()
 export class BlogService {
@@ -25,11 +26,42 @@ export class BlogService {
     return await this.blogRepository.findOne({ where: { blog_id: id } });
   }
 
-  update(id: number, updateBlogDto: UpdateBlogDto) {
-    return `This action updates a #${id} blog`;
+  async update(id: number, updateBlogDto: UpdateBlogDto): Promise<Blog> {
+    const existingBlog = await this.blogRepository.findOne({
+      where: { blog_id: id },
+    });
+    if (!existingBlog) {
+      throw new Error(`Blog not found`);
+    }
+    const updatedBlog = this.blogRepository.merge(existingBlog, updateBlogDto);
+    return await this.blogRepository.save(updatedBlog);
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} blog`;
+  async adminUpdate(
+    id: number,
+    adminUpdateBlogDto: AdminUpdateBlogDto,
+  ): Promise<Blog> {
+    const existingBlog = await this.blogRepository.findOne({
+      where: { blog_id: id },
+    });
+    if (!existingBlog) {
+      throw new Error(`Blog not found`);
+    }
+    const updatedBlog = this.blogRepository.merge(
+      existingBlog,
+      adminUpdateBlogDto,
+    );
+    return await this.blogRepository.save(updatedBlog);
+  }
+
+  async remove(id: number): Promise<void> {
+    const existingBlog = await this.blogRepository.findOne({
+      where: { blog_id: id },
+    });
+
+    if (!existingBlog) {
+      throw new Error(`Blog with ID ${id} not found`);
+    }
+    await this.blogRepository.remove(existingBlog);
   }
 }
