@@ -3,7 +3,14 @@ import {
   PrimaryGeneratedColumn,
   Column,
   CreateDateColumn,
+  OneToMany,
 } from 'typeorm';
+import { BlogComment } from '../../blog-comment/entities/blog-comment.entity';
+
+export enum BlogStatus {
+  ACCEPTED = 'accepted',
+  NOT_ACCEPTED = 'not accepted',
+}
 
 @Entity('blogs')
 export class Blog {
@@ -28,6 +35,13 @@ export class Blog {
   @CreateDateColumn()
   created_at: Date;
 
-  @Column()
-  status: string;
+  @Column({
+    type: 'enum',
+    enum: BlogStatus,
+    default: BlogStatus.NOT_ACCEPTED,
+  })
+  status: BlogStatus;
+
+  @OneToMany(() => BlogComment, (comment) => comment.blog)
+  comments: BlogComment[];
 }
