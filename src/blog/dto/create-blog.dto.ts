@@ -1,12 +1,14 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNumber, IsString, IsOptional } from 'class-validator';
+import { IsNumber, IsString, IsOptional, IsDefined } from 'class-validator';
 
 export class CreateBlogDto {
   @ApiProperty({
     example: 1,
-    description: 'The ID of the author who created the blog',
+    description: 'The ID of the author',
     type: Number,
+    required: true,
   })
+  @IsDefined()
   @IsNumber()
   author_id: number;
 
@@ -14,7 +16,9 @@ export class CreateBlogDto {
     example: 2,
     description: 'The ID of the blog category',
     type: Number,
+    required: true,
   })
+  @IsDefined()
   @IsNumber()
   category_id: number;
 
@@ -22,7 +26,9 @@ export class CreateBlogDto {
     example: 'My First Blog',
     description: 'The title of the blog',
     type: String,
+    required: true,
   })
+  @IsDefined()
   @IsString()
   title: string;
 
@@ -30,7 +36,7 @@ export class CreateBlogDto {
     example: 'This is the content of the blog.',
     description: 'The content of the blog',
     type: String,
-    required: false,
+    required: true,
   })
   @IsOptional()
   @IsString()
@@ -45,12 +51,4 @@ export class CreateBlogDto {
   @IsOptional()
   @IsString()
   thumbnail_path?: string;
-
-  @ApiProperty({
-    example: 'published',
-    description: 'The status of the blog',
-    type: String,
-  })
-  @IsString()
-  status: string;
 }
