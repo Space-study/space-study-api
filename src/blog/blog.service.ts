@@ -5,25 +5,48 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Blog, BlogStatus } from './entities/blog.entity';
 import { Repository } from 'typeorm';
 import { AdminUpdateBlogDto } from './dto/admin-update-blog';
+import { User } from '../users/domain/user';
+import { UsersService } from '../users/users.service';
 
 @Injectable()
 export class BlogService {
   constructor(
     @InjectRepository(Blog)
     private blogRepository: Repository<Blog>,
-  ) {}
+    private useService: UsersService
+  ) { }
 
   async create(createBlogDto: CreateBlogDto): Promise<Blog> {
     const newBlog = await this.blogRepository.create(createBlogDto);
     return this.blogRepository.save(newBlog);
   }
 
-  async findAll(): Promise<Blog[]> {
-    return this.blogRepository.find();
+  async findAll(): Promise<any[]> {
+    const blogs = await this.blogRepository.find();
+    const blogsWithUserDetails = await Promise.all(
+      blogs.map(async (blog) => {
+        const user = await this.useService.findById(blog?.author_id);
+        return {
+          ...blog,
+          firstname: user?.firstName,
+          lastname: user?.lastName,
+        };
+      })
+    );
+    return blogsWithUserDetails;
   }
 
-  async findOne(id: number): Promise<Blog | null> {
-    return await this.blogRepository.findOne({ where: { blog_id: id } });
+  async findOne(id: number): Promise<any> {
+    const blog = await this.blogRepository.findOne({ where: { blog_id: id } });
+    if (!blog) {
+      return null;
+    }
+    const user = await this.useService.findById(blog?.author_id);
+    return {
+      ...blog,
+      firstname: user?.firstName,
+      lastname: user?.lastName,
+    };
   }
 
   async update(id: number, updateBlogDto: UpdateBlogDto): Promise<Blog> {

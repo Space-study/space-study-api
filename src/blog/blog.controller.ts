@@ -20,16 +20,18 @@ import { AuthGuard } from '@nestjs/passport';
 import { ApiBearerAuth, ApiOkResponse } from '@nestjs/swagger';
 import { Blog } from './entities/blog.entity';
 import { AdminUpdateBlogDto } from './dto/admin-update-blog';
+import { Public } from '../auth/decorators/public.decorator';
 
-@ApiBearerAuth()
-@UseGuards(AuthGuard('jwt'))
+
 @Controller({
   path: 'blogs',
   version: '1',
 })
 export class BlogController {
-  constructor(private readonly blogService: BlogService) {}
+  constructor(private readonly blogService: BlogService) { }
 
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard('jwt'))
   @ApiOkResponse({
     type: CreateBlogDto,
   })
@@ -39,9 +41,7 @@ export class BlogController {
     return this.blogService.create(createBlogDto);
   }
 
-  @SerializeOptions({
-    groups: ['me'],
-  })
+  @Public()
   @Get()
   @ApiOkResponse({
     type: Blog,
@@ -51,6 +51,8 @@ export class BlogController {
     return this.blogService.findAll();
   }
 
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard('jwt'))
   @ApiOkResponse({
     type: Blog,
   })
@@ -63,6 +65,8 @@ export class BlogController {
     return this.blogService.findOne(+id);
   }
 
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard('jwt'))
   @ApiOkResponse({
     type: Blog,
   })
@@ -79,6 +83,8 @@ export class BlogController {
     return this.blogService.update(+id, updateBlogDto);
   }
 
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard('jwt'))
   @ApiOkResponse({
     type: Blog,
   })
@@ -94,6 +100,8 @@ export class BlogController {
     return this.blogService.adminUpdate(+id, adminUpdateBlogDto);
   }
 
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard('jwt'))
   @ApiOkResponse({
     type: Blog,
   })
