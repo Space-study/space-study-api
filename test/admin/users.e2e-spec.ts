@@ -17,40 +17,59 @@ describe('Users Module', () => {
   });
 
   describe('Update', () => {
-    let newUser;
-    const newUserEmail = `user-first.${Date.now()}@example.com`;
-    const newUserChangedEmail = `user-first-changed.${Date.now()}@example.com`;
-    const newUserPassword = `secret`;
+    let user1, user2;
+    const email1 = `user-one.${Date.now()}@example.com`;
+    const email2 = `user-two.${Date.now()}@example.com`;
+    const password = `secret`;
 
     beforeAll(async () => {
       await request(app)
         .post('/api/v1/auth/email/register')
         .send({
-          email: newUserEmail,
-          password: newUserPassword,
-          firstName: `First${Date.now()}`,
+          email: email1,
+          password,
+          firstName: `UserOne`,
           lastName: 'E2E',
+        })
+        .then(({ body }) => {
+          user1 = body.user;
         });
 
       await request(app)
-        .post('/api/v1/auth/email/login')
-        .send({ email: newUserEmail, password: newUserPassword })
+        .post('/api/v1/auth/email/register')
+        .send({
+          email: email2,
+          password,
+          firstName: `UserTwo`,
+          lastName: 'E2E',
+        })
         .then(({ body }) => {
-          newUser = body.user;
+          user2 = body.user;
         });
     });
 
     describe('User with "Admin" role', () => {
-      it('should update email for existing user: /api/v1/users/:id (PATCH)', () => {
+      it('should update email for existing user', () => {
         return request(app)
-          .patch(`/api/v1/users/${newUser.id}`)
-          .auth(apiToken, {
-            type: 'bearer',
-          })
+          .patch(`/api/v1/users/${user1.id}`)
+          .auth(apiToken, { type: 'bearer' })
           .send({
-            email: newUserChangedEmail,
+            email: `updated-${email1}`,
           })
           .expect(200);
+      });
+
+      it('should fail to update with existing email', () => {
+        return request(app)
+          .patch(`/api/v1/users/${user2.id}`)
+          .auth(apiToken, { type: 'bearer' })
+          .send({
+            email: email1,
+          })
+          .expect(400)
+          .expect(({ body }) => {
+            expect(body.message).toContain('Email already exists');
+          });
       });
     });
   });
