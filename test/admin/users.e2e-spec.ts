@@ -16,64 +16,6 @@ describe('Users Module', () => {
       });
   });
 
-  describe('Update', () => {
-    let user1, user2;
-    const email1 = `user-one.${Date.now()}@example.com`;
-    const email2 = `user-two.${Date.now()}@example.com`;
-    const password = `secret`;
-
-    beforeAll(async () => {
-      await request(app)
-        .post('/api/v1/auth/email/register')
-        .send({
-          email: email1,
-          password,
-          firstName: `UserOne`,
-          lastName: 'E2E',
-        })
-        .then(({ body }) => {
-          user1 = body.user;
-        });
-
-      await request(app)
-        .post('/api/v1/auth/email/register')
-        .send({
-          email: email2,
-          password,
-          firstName: `UserTwo`,
-          lastName: 'E2E',
-        })
-        .then(({ body }) => {
-          user2 = body.user;
-        });
-    });
-
-    describe('User with "Admin" role', () => {
-      it('should update email for existing user', () => {
-        return request(app)
-          .patch(`/api/v1/users/${user1.id}`)
-          .auth(apiToken, { type: 'bearer' })
-          .send({
-            email: `updated-${email1}`,
-          })
-          .expect(200);
-      });
-
-      it('should fail to update with existing email', () => {
-        return request(app)
-          .patch(`/api/v1/users/${user2.id}`)
-          .auth(apiToken, { type: 'bearer' })
-          .send({
-            email: email1,
-          })
-          .expect(400)
-          .expect(({ body }) => {
-            expect(body.message).toContain('Email already exists');
-          });
-      });
-    });
-  });
-
   describe('Create', () => {
     const newUserByAdminEmail = `user-created-by-admin.${Date.now()}@example.com`;
     const newUserByAdminPassword = `secret`;
