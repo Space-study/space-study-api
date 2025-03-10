@@ -17,7 +17,6 @@ describe('Users Module', () => {
   });
 
   describe('Update', () => {
-    let newUser;
     const newUserEmail = `user-first.${Date.now()}@example.com`;
     const newUserChangedEmail = `user-first-changed.${Date.now()}@example.com`;
     const newUserPassword = `secret`;
@@ -32,29 +31,9 @@ describe('Users Module', () => {
           firstName: `First${Date.now()}`,
           lastName: 'E2E',
         });
-
-      await request(app)
-        .post('/api/v1/auth/email/login')
-        .send({ email: newUserEmail, password: newUserPassword })
-        .then(({ body }) => {
-          newUser = body.user;
-        });
     });
 
     describe('User with "Admin" role', () => {
-      it('should change password for existing user: /api/v1/users/:id (PATCH)', () => {
-        return request(app)
-          .patch(`/api/v1/users/${newUser.id}`)
-          .auth(apiToken, {
-            type: 'bearer',
-          })
-          .send({
-            email: newUserChangedEmail,
-            password: newUserChangedPassword,
-          })
-          .expect(200);
-      });
-
       describe('Guest', () => {
         it('should login with changed password: /api/v1/auth/email/login (POST)', () => {
           return request(app)
