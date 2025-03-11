@@ -28,6 +28,7 @@ import { APP_GUARD } from '@nestjs/core';
 import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
 import { MusicModule } from './music/music.module';
 import { BackgroundModule } from './background/background.module';
+import { VideoCallModule } from './video-call/video-call.module';
 
 const infrastructureDatabaseModule = TypeOrmModule.forRootAsync({
   useClass: TypeOrmConfigService,
@@ -120,6 +121,7 @@ import { ChatsModule } from './chats/chats.module';
     HomeModule,
     MusicModule,
     BackgroundModule,
+    VideoCallModule
   ],
   providers: [
     {
