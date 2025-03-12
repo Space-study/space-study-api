@@ -31,6 +31,7 @@ import { BackgroundModule } from './background/background.module';
 import { BlogModule } from './blog/blog.module';
 import { CategoryModule } from './category/category.module';
 import { BlogCommentModule } from './blog-comment/blog-comment.module';
+import { RoomModule } from './room/room.module';
 
 const infrastructureDatabaseModule = TypeOrmModule.forRootAsync({
   useClass: TypeOrmConfigService,
@@ -126,6 +127,7 @@ import { ChatsModule } from './chats/chats.module';
     BlogModule,
     CategoryModule,
     BlogCommentModule,
+    RoomModule,
   ],
   providers: [
     {

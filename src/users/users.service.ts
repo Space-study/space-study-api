@@ -176,17 +176,6 @@ export class UsersService {
     // Do not remove comment below.
     // <updating-property />
 
-    let password: string | undefined = undefined;
-
-    if (updateUserDto.password) {
-      const userObject = await this.usersRepository.findById(id);
-
-      if (userObject && userObject?.password !== updateUserDto.password) {
-        const salt = await bcrypt.genSalt();
-        password = await bcrypt.hash(updateUserDto.password, salt);
-      }
-    }
-
     let email: string | null | undefined = undefined;
 
     if (updateUserDto.email) {
@@ -266,20 +255,22 @@ export class UsersService {
         id: updateUserDto.status.id,
       };
     }
-
-    return this.usersRepository.update(id, {
-      // Do not remove comment below.
-      // <updating-property-payload />
+    const updated = await this.usersRepository.update(id, {
       firstName: updateUserDto.firstName,
       lastName: updateUserDto.lastName,
       email,
-      password,
       photo,
       role,
       status,
       provider: updateUserDto.provider,
       socialId: updateUserDto.socialId,
     });
+
+    if (updated) {
+      return await this.usersRepository.findById(id);
+    }
+
+    return null;
   }
 
   async remove(id: User['id']): Promise<void> {
