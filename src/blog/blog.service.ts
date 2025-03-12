@@ -7,6 +7,7 @@ import { Repository } from 'typeorm';
 import { AdminUpdateBlogDto } from './dto/admin-update-blog';
 import { UsersService } from '../users/users.service';
 import { BlogCommentService } from '../blog-comment/blog-comment.service';
+import { MinioService } from './minioService/minio.service';
 
 @Injectable()
 export class BlogService {
@@ -15,11 +16,25 @@ export class BlogService {
     private blogRepository: Repository<Blog>,
     private useService: UsersService,
     private blogCommentService: BlogCommentService,
+    private readonly minioService: MinioService,
   ) {}
 
-  async create(createBlogDto: CreateBlogDto): Promise<Blog> {
-    const newBlog = await this.blogRepository.create(createBlogDto);
-    return this.blogRepository.save(newBlog);
+  async create(
+    file: Express.Multer.File,
+    createBlogDto: CreateBlogDto,
+  ): Promise<Blog> {
+    try {
+      const fileUrl = await this.minioService.uploadFile(file);
+
+      const blog = this.blogRepository.create({
+        ...createBlogDto,
+        thumbnail_path: fileUrl,
+      });
+
+      return await this.blogRepository.save(blog);
+    } catch (error) {
+      throw new Error(`Failed to create blog: ${error.message}`);
+    }
   }
 
   async findAll(): Promise<any[]> {

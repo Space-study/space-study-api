@@ -7,6 +7,7 @@ import { UsersService } from '../users/users.service';
 import { UsersModule } from '../users/users.module';
 import { FilesModule } from '../files/files.module';
 import { BlogCommentModule } from '../blog-comment/blog-comment.module';
+import { MinioService } from './minioService/minio.service';
 
 @Module({
   imports: [
@@ -16,7 +17,7 @@ import { BlogCommentModule } from '../blog-comment/blog-comment.module';
     BlogCommentModule,
   ],
   controllers: [BlogController],
-  providers: [BlogService, UsersService],
+  providers: [BlogService, UsersService, MinioService],
   exports: [BlogService],
 })
 export class BlogModule {}

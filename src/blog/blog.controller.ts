@@ -10,35 +10,59 @@ import {
   SerializeOptions,
   HttpCode,
   HttpStatus,
+  UseInterceptors,
+  UploadedFile,
 } from '@nestjs/common';
 import { BlogService } from './blog.service';
-import { CreateBlogDto } from './dto/create-blog.dto';
 import { UpdateBlogDto } from './dto/update-blog.dto';
 import { AuthGuard } from '@nestjs/passport';
-import { ApiBearerAuth, ApiOkResponse } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiConsumes,
+  ApiCreatedResponse,
+  ApiOkResponse,
+} from '@nestjs/swagger';
 import { Blog } from './entities/blog.entity';
 import { AdminUpdateBlogDto } from './dto/admin-update-blog';
 import { Public } from '../auth/decorators/public.decorator';
 import { RolesGuard } from '../roles/roles.guard';
 import { RoleEnum } from '../roles/roles.enum';
 import { Roles } from '../roles/roles.decorator';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @Controller({
   path: 'blogs',
   version: '1',
 })
 export class BlogController {
-  constructor(private readonly blogService: BlogService) {}
+  constructor(private readonly blogService: BlogService) { }
 
+  @Post()
   @ApiBearerAuth()
   @UseGuards(AuthGuard('jwt'))
-  @ApiOkResponse({
-    type: CreateBlogDto,
+  @ApiOkResponse({ type: Blog })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    description: 'Blog Upload',
+    schema: {
+      type: 'object',
+      properties: {
+        file: { type: 'string', format: 'binary' },
+        author_id: { type: 'integer' },
+        category_id: { type: 'integer' },
+        title: { type: 'string' },
+        content: { type: 'string' },
+      },
+    },
   })
-  @Post()
-  @HttpCode(HttpStatus.CREATED)
-  create(@Body() createBlogDto: CreateBlogDto) {
-    return this.blogService.create(createBlogDto);
+  @ApiCreatedResponse({ description: 'Blog successfully created.' })
+  @UseInterceptors(FileInterceptor('file'))
+  async uploadMusic(
+    @UploadedFile() file: Express.Multer.File,
+    @Body() body: any,
+  ) {
+    return this.blogService.create(file, body);
   }
 
   @Public()
