@@ -41,14 +41,4 @@ export class CreateBlogDto {
   @IsOptional()
   @IsString()
   content?: string;
-
-  @ApiProperty({
-    example: '/images/thumbnail.jpg',
-    description: 'The path to the thumbnail image',
-    type: String,
-    required: false,
-  })
-  @IsOptional()
-  @IsString()
-  thumbnail_path?: string;
 }
