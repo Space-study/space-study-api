@@ -9,10 +9,14 @@ import {
   UpdateDateColumn,
   JoinColumn,
   OneToOne,
+  ManyToMany,
+  OneToMany,
 } from 'typeorm';
 import { RoleEntity } from '../../../../../roles/infrastructure/persistence/relational/entities/role.entity';
 import { StatusEntity } from '../../../../../statuses/infrastructure/persistence/relational/entities/status.entity';
 import { FileEntity } from '../../../../../files/infrastructure/persistence/relational/entities/file.entity';
+import { ChatEntity } from '../../../../../chats/infrastructure/persistence/relational/entities/chat.entity';
+import { MessageEntity } from '../../../../../chats/infrastructure/persistence/relational/entities/message.entity';
 
 import { AuthProvidersEnum } from '../../../../../auth/auth-providers.enum';
 import { EntityRelationalHelper } from '../../../../../utils/relational-entity-helper';
@@ -62,6 +66,15 @@ export class UserEntity extends EntityRelationalHelper {
     eager: true,
   })
   status?: StatusEntity;
+
+  @ManyToMany(() => ChatEntity, (chat) => chat.participants)
+  participatedChats: ChatEntity[];
+
+  @OneToMany(() => ChatEntity, (chat) => chat.owner)
+  ownedChats: ChatEntity[];
+
+  @OneToMany(() => MessageEntity, (message) => message.user)
+  messages: MessageEntity[];
 
   @CreateDateColumn()
   createdAt: Date;

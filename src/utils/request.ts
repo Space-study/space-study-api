@@ -1,4 +1,11 @@
-import { AttributeValue, Context, Span, SpanStatus, TimeInput, Tracer } from '@opentelemetry/api';
+import {
+  AttributeValue,
+  Context,
+  Span,
+  SpanStatus,
+  TimeInput,
+  Tracer,
+} from '@opentelemetry/api';
 import { AxiosInstance, AxiosRequestConfig } from 'axios';
 
 import { UserEntity } from '@/users/infrastructure/persistence/relational/entities/user.entity';
@@ -9,7 +16,10 @@ export type TracingType = {
   tracerId: string;
   axios: (config?: AxiosRequestConfig) => AxiosInstance;
   setStatus: (status: SpanStatus) => void;
-  logEvent: (name: string, attributesOrStartTime?: AttributeValue | TimeInput) => void;
+  logEvent: (
+    name: string,
+    attributesOrStartTime?: AttributeValue | TimeInput,
+  ) => void;
   addAttribute: (key: string, value: AttributeValue) => void;
   createSpan: (name: string, parent?: Context) => Span;
   finish: () => void;
@@ -38,7 +48,10 @@ export interface ApiRequest {
 export type ApiTrancingInput = Pick<ApiRequest, 'user' | 'tracing'>;
 
 export const getPathWithoutUUID = (path: string) =>
-  path.replace(/[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}$/, 'uuid');
+  path.replace(
+    /[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}$/,
+    'uuid',
+  );
 
 export class ApiOkResponse {
   static STATUS: 200;

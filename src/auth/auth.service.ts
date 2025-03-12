@@ -9,7 +9,7 @@ import ms from 'ms';
 import crypto from 'crypto';
 import { randomStringGenerator } from '@nestjs/common/utils/random-string-generator.util';
 import { JwtService } from '@nestjs/jwt';
-import bcrypt from 'bcryptjs';
+import bcrypt, { compare } from 'bcryptjs';
 import { AuthEmailLoginDto } from './dto/auth-email-login.dto';
 import { AuthUpdateDto } from './dto/auth-update.dto';
 import { AuthProvidersEnum } from './auth-providers.enum';
@@ -28,6 +28,9 @@ import { Session } from '../session/domain/session';
 import { SessionService } from '../session/session.service';
 import { StatusEnum } from '../statuses/statuses.enum';
 import { User } from '../users/domain/user';
+import { MailerService } from '@nestjs-modules/mailer';
+import { AuthGoogleDto } from './dto/auth-google-create.dto';
+import { CurrentUser } from './strategies/types/google/current-user';
 
 @Injectable()
 export class AuthService {
@@ -37,6 +40,7 @@ export class AuthService {
     private sessionService: SessionService,
     private mailService: MailService,
     private configService: ConfigService<AllConfigType>,
+    private readonly mailerService: MailerService,
   ) {}
 
   async validateLogin(loginDto: AuthEmailLoginDto): Promise<LoginResponseDto> {
@@ -69,7 +73,10 @@ export class AuthService {
       });
     }
 
-    const isValidPassword = await bcrypt.compare(loginDto.password, user.password);
+    const isValidPassword = await bcrypt.compare(
+      loginDto.password,
+      user.password,
+    );
 
     if (!isValidPassword) {
       throw new UnprocessableEntityException({
@@ -80,7 +87,10 @@ export class AuthService {
       });
     }
 
-    const hash = crypto.createHash('sha256').update(randomStringGenerator()).digest('hex');
+    const hash = crypto
+      .createHash('sha256')
+      .update(randomStringGenerator())
+      .digest('hex');
 
     const session = await this.sessionService.create({
       user,
@@ -102,7 +112,10 @@ export class AuthService {
     };
   }
 
-  async validateSocialLogin(authProvider: string, socialData: SocialInterface): Promise<LoginResponseDto> {
+  async validateSocialLogin(
+    authProvider: string,
+    socialData: SocialInterface,
+  ): Promise<LoginResponseDto> {
     let user: NullableType<User> = null;
     const socialEmail = socialData.email?.toLowerCase();
     let userByEmail: NullableType<User> = null;
@@ -155,7 +168,10 @@ export class AuthService {
       });
     }
 
-    const hash = crypto.createHash('sha256').update(randomStringGenerator()).digest('hex');
+    const hash = crypto
+      .createHash('sha256')
+      .update(randomStringGenerator())
+      .digest('hex');
 
     const session = await this.sessionService.create({
       user,
@@ -207,12 +223,18 @@ export class AuthService {
       },
     );
 
-    await this.mailService.userSignUp({
-      to: dto.email,
-      data: {
-        hash,
-      },
-    });
+    this.mailerService
+      .sendMail({
+        to: user?.email || undefined,
+        subject: 'Activate your account',
+        template: 'activation.hbs',
+        context: {
+          name: user.firstName + ' ' + user.lastName,
+          confirmationUrl: `${process.env.FRONTEND_DOMAIN}/confirm-email?token=${hash}`,
+        },
+      })
+      .then(() => {})
+      .catch(() => {});
   }
 
   async confirmEmail(hash: string): Promise<void> {
@@ -239,7 +261,10 @@ export class AuthService {
 
     const user = await this.usersService.findById(userId);
 
-    if (!user || user?.status?.id?.toString() !== StatusEnum.inactive.toString()) {
+    if (
+      !user ||
+      user?.status?.id?.toString() !== StatusEnum.inactive.toString()
+    ) {
       throw new NotFoundException({
         status: HttpStatus.NOT_FOUND,
         error: `notFound`,
@@ -311,7 +336,12 @@ export class AuthService {
       infer: true,
     });
 
-    const tokenExpires = Date.now() + ms(tokenExpiresIn);
+    if (
+      !tokenExpiresIn ||
+      !this.configService.get('auth.forgotSecret', { infer: true })
+    ) {
+      throw new Error('Forgot password configuration missing.');
+    }
 
     const hash = await this.jwtService.signAsync(
       {
@@ -325,13 +355,44 @@ export class AuthService {
       },
     );
 
-    await this.mailService.forgotPassword({
-      to: email,
-      data: {
-        hash,
-        tokenExpires,
-      },
-    });
+    try {
+      await this.mailerService.sendMail({
+        to: user?.email || undefined,
+        subject: 'Reset your password',
+        template: 'reset-password.hbs',
+        context: {
+          name: `${user.firstName} ${user.lastName}`,
+          confirmationUrl: `${process.env.FRONTEND_DOMAIN}/forgot-password/reset?token=${hash}`,
+        },
+      });
+    } catch (error) {
+      console.error('Failed to send forgot password email:', error);
+      throw new Error('Failed to send reset password email.');
+    }
+  }
+
+  async confirmForgotPasswordToken(hash: string): Promise<void> {
+    try {
+      // Verify the token using the secret
+      const secret = this.configService.getOrThrow('auth.forgotSecret', {
+        infer: true,
+      });
+
+      const payload = await this.jwtService.verifyAsync(hash, {
+        secret,
+      });
+
+      // Ensure the payload contains the expected information
+      if (!payload?.forgotUserId) {
+        throw new UnauthorizedException('Invalid token.');
+      }
+
+      // Return the user ID from the token
+      return payload.forgotUserId;
+    } catch (error) {
+      console.error('Token verification failed:', error);
+      throw new UnauthorizedException('Invalid or expired token.');
+    }
   }
 
   async resetPassword(hash: string, password: string): Promise<void> {
@@ -380,7 +441,10 @@ export class AuthService {
     return this.usersService.findById(userJwtPayload.id);
   }
 
-  async update(userJwtPayload: JwtPayloadType, userDto: AuthUpdateDto): Promise<NullableType<User>> {
+  async update(
+    userJwtPayload: JwtPayloadType,
+    userDto: AuthUpdateDto,
+  ): Promise<NullableType<User>> {
     const currentUser = await this.usersService.findById(userJwtPayload.id);
 
     if (!currentUser) {
@@ -411,7 +475,10 @@ export class AuthService {
         });
       }
 
-      const isValidOldPassword = await bcrypt.compare(userDto.oldPassword, currentUser.password);
+      const isValidOldPassword = await bcrypt.compare(
+        userDto.oldPassword,
+        currentUser.password,
+      );
 
       if (!isValidOldPassword) {
         throw new UnprocessableEntityException({
@@ -471,7 +538,9 @@ export class AuthService {
     return this.usersService.findById(userJwtPayload.id);
   }
 
-  async refreshToken(data: Pick<JwtRefreshPayloadType, 'sessionId' | 'hash'>): Promise<Omit<LoginResponseDto, 'user'>> {
+  async refreshToken(
+    data: Pick<JwtRefreshPayloadType, 'sessionId' | 'hash'>,
+  ): Promise<Omit<LoginResponseDto, 'user'>> {
     const session = await this.sessionService.findById(data.sessionId);
 
     if (!session) {
@@ -482,7 +551,10 @@ export class AuthService {
       throw new UnauthorizedException();
     }
 
-    const hash = crypto.createHash('sha256').update(randomStringGenerator()).digest('hex');
+    const hash = crypto
+      .createHash('sha256')
+      .update(randomStringGenerator())
+      .digest('hex');
 
     const user = await this.usersService.findById(session.user.id);
 
@@ -562,6 +634,93 @@ export class AuthService {
       token,
       refreshToken,
       tokenExpires,
+    };
+  }
+
+  //-------- Google ------------//
+
+  async validateJwtUser(userId: string) {
+    const user = await this.usersService.findById(userId);
+    if (!user) throw new UnauthorizedException('User not found!');
+    const currentUser: CurrentUser = {
+      id: user.id.toString(),
+      role: user.role,
+    };
+    return currentUser;
+  }
+
+  async validateGoogleUser(googleUser: AuthGoogleDto) {
+    const user = await this.usersService.findByEmail(googleUser.email);
+    if (user) return user;
+    return await this.usersService.create(googleUser);
+  }
+
+  async validateUser(email: string, password: string) {
+    const user = await this.usersService.findByEmail(email);
+    if (!user) throw new UnauthorizedException('User not found!');
+    if (!user.password) {
+      throw new UnauthorizedException('User does not have a password set.');
+    }
+    const isPasswordMatch = await compare(password, user.password);
+    if (!isPasswordMatch)
+      throw new UnauthorizedException('Invalid credentials');
+
+    return { id: user.id };
+  }
+
+  async login(
+    userId: number,
+    provider?: AuthProvidersEnum,
+  ): Promise<LoginResponseDto> {
+    const user = await this.usersService.findById(userId);
+
+    if (!user) {
+      throw new UnauthorizedException('User not found!');
+    }
+
+    // Verify provider consistency if specified
+    if (provider && user.provider !== provider) {
+      throw new UnprocessableEntityException({
+        status: HttpStatus.UNPROCESSABLE_ENTITY,
+        errors: {
+          provider: `User is not registered via ${provider}`,
+        },
+      });
+    }
+
+    // Update status and role
+    user.status = { id: StatusEnum.active };
+    // user.role = { id: RoleEnum.user };
+
+    await this.usersService.update(user.id, user);
+
+    // Generate session hash
+    const hash = crypto
+      .createHash('sha256')
+      .update(randomStringGenerator())
+      .digest('hex');
+
+    // Create new session
+    const session = await this.sessionService.create({
+      user,
+      hash,
+    });
+
+    // Get tokens using common token generator
+    const { token, refreshToken, tokenExpires } = await this.getTokensData({
+      id: user.id,
+      role: user.role,
+      sessionId: session.id,
+      hash,
+    });
+
+    console.log(user.role);
+
+    return {
+      refreshToken,
+      token,
+      tokenExpires,
+      user,
     };
   }
 }

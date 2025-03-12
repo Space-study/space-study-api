@@ -1,5 +1,9 @@
 import 'dotenv/config';
-import { ClassSerializerInterceptor, ValidationPipe, VersioningType } from '@nestjs/common';
+import {
+  ClassSerializerInterceptor,
+  ValidationPipe,
+  VersioningType,
+} from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { NestFactory, Reflector } from '@nestjs/core';
 import { ConfigService } from '@nestjs/config';
@@ -45,9 +49,12 @@ async function bootstrap() {
     .enableVersioning({
       type: VersioningType.URI,
     })
-    .setGlobalPrefix(configService.getOrThrow('app.apiPrefix', { infer: true }), {
-      exclude: ['/'],
-    })
+    .setGlobalPrefix(
+      configService.getOrThrow('app.apiPrefix', { infer: true }),
+      {
+        exclude: ['/'],
+      },
+    )
     .useGlobalInterceptors(
       new ResolvePromisesInterceptor(),
       new ClassSerializerInterceptor(app.get(Reflector)),
@@ -70,18 +77,28 @@ async function bootstrap() {
     SwaggerModule.setup('docs', app, document);
   }
 
-  await app.listen(configService.getOrThrow('app.port', { infer: true }), () => {
-    AppModule.logger.info(
-      'Application',
-      `Service listening at ${bold(configService.getOrThrow('app.port', { infer: true }))} on ${bold(
-        configService.getOrThrow('app.nodeEnv', { infer: true })?.toUpperCase(),
-      )} 🟢`,
-    );
-    if (!configService.getOrThrow('app.isProduction', { infer: true })) {
-      const host = configService.getOrThrow('app.backendDomain', { infer: true });
-      AppModule.logger.info('Swagger', `Swagger listening at ${bold(`${host}/docs`)} 🟢`);
-    }
-  });
+  await app.listen(
+    configService.getOrThrow('app.port', { infer: true }),
+    () => {
+      AppModule.logger.info(
+        'Application',
+        `Service listening at ${bold(configService.getOrThrow('app.port', { infer: true }))} on ${bold(
+          configService
+            .getOrThrow('app.nodeEnv', { infer: true })
+            ?.toUpperCase(),
+        )} 🟢`,
+      );
+      if (!configService.getOrThrow('app.isProduction', { infer: true })) {
+        const host = configService.getOrThrow('app.backendDomain', {
+          infer: true,
+        });
+        AppModule.logger.info(
+          'Swagger',
+          `Swagger listening at ${bold(`${host}/docs`)} 🟢`,
+        );
+      }
+    },
+  );
 
   AppModule.logger.info(
     'Postgres',

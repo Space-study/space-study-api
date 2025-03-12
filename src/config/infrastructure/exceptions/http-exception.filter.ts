@@ -1,4 +1,9 @@
-import { ArgumentsHost, Catch, ExceptionFilter, HttpException } from '@nestjs/common';
+import {
+  ArgumentsHost,
+  Catch,
+  ExceptionFilter,
+  HttpException,
+} from '@nestjs/common';
 import { Request, Response } from 'express';
 import { LoggerService } from '../logger/logger.service';
 
@@ -31,7 +36,12 @@ export class HttpExceptionFilter implements ExceptionFilter {
     });
   }
 
-  private logMessage(request: any, message: string, status: number, exception: any) {
+  private logMessage(
+    request: any,
+    message: string,
+    status: number,
+    exception: any,
+  ) {
     if (status === 500) {
       this.logger.error(
         `End Request for ${request.path}`,

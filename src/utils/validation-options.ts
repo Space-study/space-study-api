@@ -1,4 +1,9 @@
-import { HttpStatus, UnprocessableEntityException, ValidationError, ValidationPipeOptions } from '@nestjs/common';
+import {
+  HttpStatus,
+  UnprocessableEntityException,
+  ValidationError,
+  ValidationPipeOptions,
+} from '@nestjs/common';
 
 function generateErrors(errors: ValidationError[]) {
   return errors.reduce(

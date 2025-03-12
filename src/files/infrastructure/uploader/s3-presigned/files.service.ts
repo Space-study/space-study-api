@@ -1,4 +1,9 @@
-import { HttpStatus, Injectable, PayloadTooLargeException, UnprocessableEntityException } from '@nestjs/common';
+import {
+  HttpStatus,
+  Injectable,
+  PayloadTooLargeException,
+  UnprocessableEntityException,
+} from '@nestjs/common';
 import { FileRepository } from '../../persistence/file.repository';
 
 import { FileUploadDto } from './dto/file.dto';
@@ -29,7 +34,9 @@ export class FilesS3PresignedService {
     });
   }
 
-  async create(file: FileUploadDto): Promise<{ file: FileType; uploadSignedUrl: string }> {
+  async create(
+    file: FileUploadDto,
+  ): Promise<{ file: FileType; uploadSignedUrl: string }> {
     if (!file) {
       throw new UnprocessableEntityException({
         status: HttpStatus.UNPROCESSABLE_ENTITY,

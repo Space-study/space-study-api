@@ -2,7 +2,10 @@ import { ApiBadRequestException } from './exception';
 import { SortEnum } from './sort';
 
 export class CollectionUtil {
-  static groupBy = <T>(collection: unknown[] = [], key: string): { [key: string]: T[] } => {
+  static groupBy = <T>(
+    collection: unknown[] = [],
+    key: string,
+  ): { [key: string]: T[] } => {
     if (!key.length) {
       throw new ApiBadRequestException();
     }
@@ -94,7 +97,11 @@ export class CollectionUtil {
     return array;
   }
 
-  static sortNullToLastPosition = <T>(collection: T[], key: keyof T, sort: SortEnum = SortEnum.asc) => {
+  static sortNullToLastPosition = <T>(
+    collection: T[],
+    key: keyof T,
+    sort: SortEnum = SortEnum.asc,
+  ) => {
     return collection.sort((a: any, b: any) => {
       if (a[key.toString()] === b[key.toString()]) {
         return 0;

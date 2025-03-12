@@ -9,6 +9,10 @@ import { User } from '../../../../domain/user';
 import { UserRepository } from '../../user.repository';
 import { UserMapper } from '../mappers/user.mapper';
 import { IPaginationOptions } from '../../../../../utils/types/pagination-options';
+import { ChatMapper } from '../../../../../chats/infrastructure/persistence/relational/mappers/chat.mapper';
+import { MessageMapper } from '../../../../../chats/infrastructure/persistence/relational/mappers/message.mapper';
+import { Chat } from '../../../../../chats/domain/chat';
+import { Message } from '../../../../../chats/domain/message';
 
 @Injectable()
 export class UsersRelationalRepository implements UserRepository {
@@ -19,7 +23,9 @@ export class UsersRelationalRepository implements UserRepository {
 
   async create(data: User): Promise<User> {
     const persistenceModel = UserMapper.toPersistence(data);
-    const newEntity = await this.usersRepository.save(this.usersRepository.create(persistenceModel));
+    const newEntity = await this.usersRepository.save(
+      this.usersRepository.create(persistenceModel),
+    );
     return UserMapper.toDomain(newEntity);
   }
 
@@ -120,5 +126,33 @@ export class UsersRelationalRepository implements UserRepository {
 
   async remove(id: User['id']): Promise<void> {
     await this.usersRepository.softDelete(id);
+  }
+
+  async findUserChats(userId: User['id']): Promise<Chat[]> {
+    const user = await this.usersRepository.findOne({
+      where: { id: Number(userId) },
+      relations: ['participatedChats'],
+    });
+    return (
+      user?.participatedChats?.map((chat) => ChatMapper.toDomain(chat)) || []
+    );
+  }
+
+  async findUserMessages(userId: User['id']): Promise<Message[]> {
+    const user = await this.usersRepository.findOne({
+      where: { id: Number(userId) },
+      relations: ['messages'],
+    });
+    return (
+      user?.messages?.map((message) => MessageMapper.toDomain(message)) || []
+    );
+  }
+
+  async findUserOwnedChats(userId: User['id']): Promise<Chat[]> {
+    const user = await this.usersRepository.findOne({
+      where: { id: Number(userId) },
+      relations: ['ownedChats'],
+    });
+    return user?.ownedChats?.map((chat) => ChatMapper.toDomain(chat)) || [];
   }
 }
