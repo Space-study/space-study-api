@@ -42,8 +42,17 @@ const infrastructureDatabaseModule = TypeOrmModule.forRootAsync({
 
 import { ChatsModule } from './chats/chats.module';
 
+import { ProjectsModule } from './projects/projects.module';
+
+import { IssueLabelsModule } from './issue-labels/issue-labels.module';
+
+import { IssuesModule } from './issues/issues.module';
+
 @Module({
   imports: [
+    IssuesModule,
+    IssueLabelsModule,
+    ProjectsModule,
     ChatsModule,
     ConfigModule.forRoot({
       isGlobal: true,
