@@ -8,5 +8,18 @@ export class Room {
     private readonly category: string,
     private readonly createdAt: Date,
     private readonly status: 'active' | 'ban' | 'pending' = 'pending',
+    private readonly invite_link: string,
   ) {}
+
+  getPrivacy(): 'public' | 'private' {
+    return this.privacy;
+  }
+
+  getInviteLink(): string {
+    return this.invite_link;
+  }
+
+  getMaxMembers(): number {
+    return this.maxMembers;
+  }
 }

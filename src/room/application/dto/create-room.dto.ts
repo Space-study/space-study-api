@@ -43,4 +43,8 @@ export class CreateRoomDto {
   @IsOptional()
   @IsEnum(['active', 'ban', 'pending'])
   status?: 'active' | 'ban' | 'pending';
+
+  @IsOptional()
+  @IsEnum(['active', 'ban', 'pending'])
+  invite_link?: 'active' | 'ban' | 'pending';
 }

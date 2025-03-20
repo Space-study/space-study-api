@@ -40,4 +40,10 @@ export class CreateRoomResponse {
     enum: ['active', 'ban', 'pending'],
   })
   status: 'active' | 'ban' | 'pending';
+
+  @ApiProperty({
+    example: '/rooms/join?roomId=1&inviteLink=sdsedasd',
+    description: 'Date when the room was created.',
+  })
+  invite_link?: string;
 }

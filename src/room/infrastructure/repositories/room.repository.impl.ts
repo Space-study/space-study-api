@@ -1,10 +1,10 @@
-// infrastructure/repositories/room.repository.impl.ts
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { RoomRepository } from '../../domain/repositories/room.repository';
 import { Room } from '../../domain/entities/room.entity';
 import { RoomOrmEntity } from '../persistence/room-om.entity';
+import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
 export class RoomRepositoryImpl implements RoomRepository {
@@ -21,7 +21,8 @@ export class RoomRepositoryImpl implements RoomRepository {
       image_url: room['imageUrl'],
       category: room['category'],
       created_at: room['createdAt'],
-      status: room['status'], // Map status
+      status: room['status'],
+      invite_link: room['privacy'] === 'private' ? uuidv4() : '',
     });
 
     const saved = await this.repo.save(roomOrmEntity);
@@ -34,40 +35,19 @@ export class RoomRepositoryImpl implements RoomRepository {
       saved.image_url,
       saved.category,
       saved.created_at,
-      saved.status, // Map status back
+      saved.status,
+      saved.invite_link ?? '',
     );
   }
 
   async findById(id: number): Promise<Room | null> {
     const room = await this.repo.findOne({ where: { id } });
-    if (!room) return null;
-    return new Room(
-      room.id,
-      room.name,
-      room.privacy,
-      room.max_members,
-      room.image_url,
-      room.category,
-      room.created_at,
-      room.status, // Map status
-    );
+    return room ? this.mapToDomain(room) : null;
   }
 
   async findAll(): Promise<Room[]> {
     const rooms = await this.repo.find();
-    return rooms.map(
-      (room) =>
-        new Room(
-          room.id,
-          room.name,
-          room.privacy,
-          room.max_members,
-          room.image_url,
-          room.category,
-          room.created_at,
-          room.status, // Map status
-        ),
-    );
+    return rooms.map(this.mapToDomain);
   }
 
   async update(id: number, room: Partial<Room>): Promise<Room> {
@@ -79,6 +59,8 @@ export class RoomRepositoryImpl implements RoomRepository {
     if (room['imageUrl'] !== undefined) updateData.image_url = room['imageUrl'];
     if (room['category'] !== undefined) updateData.category = room['category'];
     if (room['status'] !== undefined) updateData.status = room['status'];
+    if (room['inviteLink'] !== undefined)
+      updateData.invite_link = room['inviteLink'] ?? '';
 
     await this.repo.update(id, updateData);
     const updatedRoom = await this.findById(id);
@@ -88,5 +70,19 @@ export class RoomRepositoryImpl implements RoomRepository {
 
   async delete(id: number): Promise<void> {
     await this.repo.delete(id);
+  }
+
+  private mapToDomain(roomOrm: RoomOrmEntity): Room {
+    return new Room(
+      roomOrm.id,
+      roomOrm.name,
+      roomOrm.privacy,
+      roomOrm.max_members,
+      roomOrm.image_url,
+      roomOrm.category,
+      roomOrm.created_at,
+      roomOrm.status,
+      roomOrm.invite_link ?? '',
+    );
   }
 }

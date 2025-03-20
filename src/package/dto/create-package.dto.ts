@@ -1,5 +1,11 @@
 // create-package.dto.ts
-import { IsNotEmpty, IsString, IsNumber, IsOptional, IsEnum } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsString,
+  IsNumber,
+  IsOptional,
+  IsEnum,
+} from 'class-validator';
 import { PackageStatus } from '../entities/package.entity';
 
 export class CreatePackageDto {
@@ -18,7 +24,6 @@ export class CreatePackageDto {
   @IsNotEmpty()
   @IsNumber()
   duration: number;
-
 
   @IsOptional()
   @IsEnum(PackageStatus)

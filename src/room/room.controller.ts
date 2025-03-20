@@ -9,6 +9,10 @@ import {
   UseInterceptors,
   UploadedFile,
   BadRequestException,
+  Query,
+  ParseIntPipe,
+  HttpStatus,
+  HttpException,
 } from '@nestjs/common';
 import { RoomService } from './application/services/room.service';
 import { UpdateRoomDto } from './application/dto/update-room.dto';
@@ -21,6 +25,10 @@ import {
   ApiCreatedResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
+  ApiOperation,
+  ApiParam,
+  ApiQuery,
+  ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -142,5 +150,65 @@ export class RoomController {
   @ApiNotFoundResponse({ description: 'Room not found.' })
   async delete(@Param('id') id: number) {
     return this.roomService.delete(id);
+  }
+
+  @Public()
+  @Post(':id/join')
+  @ApiOperation({
+    summary: 'Join a room',
+    description: 'Join a room using invite link. Required for private rooms.',
+  })
+  @ApiParam({
+    name: 'id',
+    type: 'number',
+    description: 'Room ID',
+    required: true,
+  })
+  @ApiQuery({
+    name: 'inviteLink',
+    type: 'string',
+    description: 'Invite link for private rooms',
+    required: false,
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Successfully joined room',
+    schema: {
+      type: 'object',
+      properties: {
+        message: {
+          type: 'string',
+          example: 'Successfully joined room',
+        },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Invalid invite link or unauthorized access',
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Room full or already a member',
+  })
+  async joinRoom(
+    @Param('id', ParseIntPipe) roomId: number,
+    @Query('inviteLink') inviteLink: string,
+  ) {
+    try {
+      await this.roomService.joinRoom(roomId, inviteLink);
+      return {
+        statusCode: HttpStatus.OK,
+        message: 'Successfully joined room',
+      };
+    } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
+      throw new HttpException(
+        'Internal Server Error',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 }

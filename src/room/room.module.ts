@@ -8,6 +8,7 @@ import { CreateRoomUseCase } from './application/use-cases/create-room.usecase';
 import { GetRoomUseCase } from './application/use-cases/get-room.usecase';
 import { UpdateRoomUseCase } from './application/use-cases/update-room.usecase';
 import { DeleteRoomUseCase } from './application/use-cases/delete-room.usecase';
+import { JoinRoomUseCase } from './application/use-cases/join-room.usecase';
 import { MinioService } from './infrastructure/service/minio.service';
 
 @Module({
@@ -20,6 +21,7 @@ import { MinioService } from './infrastructure/service/minio.service';
     GetRoomUseCase,
     UpdateRoomUseCase,
     DeleteRoomUseCase,
+    JoinRoomUseCase,
     MinioService,
   ],
   exports: [
@@ -28,6 +30,7 @@ import { MinioService } from './infrastructure/service/minio.service';
     GetRoomUseCase,
     UpdateRoomUseCase,
     DeleteRoomUseCase,
+    JoinRoomUseCase,
   ],
 })
 export class RoomModule {}
