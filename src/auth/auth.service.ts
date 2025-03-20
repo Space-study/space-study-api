@@ -230,7 +230,7 @@ export class AuthService {
         template: 'activation.hbs',
         context: {
           name: user.firstName + ' ' + user.lastName,
-          confirmationUrl: `${process.env.FRONTEND_DOMAIN}/confirm-email?token=${hash}`,
+          confirmationUrl: `${process.env.FRONTEND_DOMAIN}/auth/confirm-email?token=${hash}`,
         },
       })
       .then(() => {})
@@ -362,7 +362,7 @@ export class AuthService {
         template: 'reset-password.hbs',
         context: {
           name: `${user.firstName} ${user.lastName}`,
-          confirmationUrl: `${process.env.FRONTEND_DOMAIN}/forgot-password/reset?token=${hash}`,
+          confirmationUrl: `${process.env.FRONTEND_DOMAIN}/auth/forgot-password/reset?token=${hash}`,
         },
       });
     } catch (error) {
@@ -724,3 +724,4 @@ export class AuthService {
     };
   }
 }
+
