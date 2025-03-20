@@ -28,6 +28,9 @@ import { APP_GUARD } from '@nestjs/core';
 import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
 import { MusicModule } from './music/music.module';
 import { BackgroundModule } from './background/background.module';
+import { BlogModule } from './blog/blog.module';
+import { CategoryModule } from './category/category.module';
+import { BlogCommentModule } from './blog-comment/blog-comment.module';
 import { RoomModule } from './room/room.module';
 
 const infrastructureDatabaseModule = TypeOrmModule.forRootAsync({
@@ -39,8 +42,19 @@ const infrastructureDatabaseModule = TypeOrmModule.forRootAsync({
 
 import { ChatsModule } from './chats/chats.module';
 
+import { PackageModule } from './package/package.module';
+import { ProjectsModule } from './projects/projects.module';
+
+import { IssueLabelsModule } from './issue-labels/issue-labels.module';
+
+import { IssuesModule } from './issues/issues.module';
+import { PaymentModule } from './payment/payment.module';
+
 @Module({
   imports: [
+    IssuesModule,
+    IssueLabelsModule,
+    ProjectsModule,
     ChatsModule,
     ConfigModule.forRoot({
       isGlobal: true,
@@ -121,7 +135,12 @@ import { ChatsModule } from './chats/chats.module';
     HomeModule,
     MusicModule,
     BackgroundModule,
+    BlogModule,
+    CategoryModule,
+    BlogCommentModule,
     RoomModule,
+    PackageModule,
+    PaymentModule,
   ],
   providers: [
     {

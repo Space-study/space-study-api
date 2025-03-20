@@ -3,7 +3,9 @@ import {
   PrimaryGeneratedColumn,
   Column,
   CreateDateColumn,
+  OneToMany,
 } from 'typeorm';
+import { ProjectEntity } from '../../../projects/infrastructure/persistence/relational/entities/project.entity';
 
 @Entity('rooms')
 export class RoomOrmEntity {
@@ -34,4 +36,10 @@ export class RoomOrmEntity {
     default: 'pending',
   })
   status: 'active' | 'ban' | 'pending';
+
+  @Column({ nullable: true })
+  invite_link?: string;
+
+  @OneToMany(() => ProjectEntity, (project) => project.room)
+  projects: ProjectEntity[];
 }

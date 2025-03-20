@@ -27,18 +27,25 @@ export class BackgroundService {
   }
 
   async findAll(): Promise<Background[]> {
-    return this.getBackgroundUseCase.executeAll(); // ✅ Fetch all
+    return this.getBackgroundUseCase.executeAll();
   }
 
   async findById(id: number): Promise<Background> {
-    return this.getBackgroundUseCase.execute(id); // ✅ Fetch by ID
+    return this.getBackgroundUseCase.execute(id);
   }
 
   async update(
     id: number,
-    updateBackgroundDto: UpdateBackgroundDto,
+    body: any,
+    file?: Express.Multer.File,
   ): Promise<Background> {
-    return this.updateBackgroundUseCase.execute(id, updateBackgroundDto);
+    const updateBackgroundDto = new UpdateBackgroundDto();
+    // updateBackgroundDto.user_create_id = Number(body.user_create_id);
+    updateBackgroundDto.category_id = Number(body.category_id);
+    updateBackgroundDto.title = body.title;
+    updateBackgroundDto.description = body.description;
+
+    return this.updateBackgroundUseCase.execute(id, updateBackgroundDto, file);
   }
 
   async delete(id: number): Promise<void> {

@@ -4,6 +4,7 @@ import { RoomRepository } from '../../domain/repositories/room.repository';
 import { MinioService } from '../../infrastructure/service/minio.service';
 import { CreateRoomDto } from '../dto/create-room.dto';
 import { Room } from '../../domain/entities/room.entity';
+import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
 export class CreateRoomUseCase {
@@ -20,14 +21,15 @@ export class CreateRoomUseCase {
     const imageUrl = await this.minioService.uploadFile(file);
 
     const room = new Room(
-      0, // ID will be assigned by the database
+      0,
       createRoomDto.name,
       createRoomDto.privacy,
       createRoomDto.maxMembers,
       imageUrl,
       createRoomDto.category,
       new Date(),
-      createRoomDto.status || 'pending', // Use DTO status or default to 'pending'
+      createRoomDto.status || 'pending',
+      createRoomDto.privacy === 'private' ? uuidv4() : null,
     );
 
     return this.roomRepository.create(room);

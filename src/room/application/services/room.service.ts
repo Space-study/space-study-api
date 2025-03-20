@@ -3,6 +3,7 @@ import { CreateRoomUseCase } from '../use-cases/create-room.usecase';
 import { DeleteRoomUseCase } from '../use-cases/delete-room.usecase';
 import { GetRoomUseCase } from '../use-cases/get-room.usecase';
 import { UpdateRoomUseCase } from '../use-cases/update-room.usecase';
+import { JoinRoomUseCase } from '../use-cases/join-room.usecase';
 import { CreateRoomDto } from '../dto/create-room.dto';
 import { UpdateRoomDto } from '../dto/update-room.dto';
 import { Room } from '../../domain/entities/room.entity';
@@ -14,6 +15,7 @@ export class RoomService {
     private readonly deleteRoomUseCase: DeleteRoomUseCase,
     private readonly getRoomUseCase: GetRoomUseCase,
     private readonly updateRoomUseCase: UpdateRoomUseCase,
+    private readonly joinRoomUseCase: JoinRoomUseCase,
   ) {}
 
   async create(file: Express.Multer.File, body: any): Promise<Room> {
@@ -40,5 +42,14 @@ export class RoomService {
 
   async delete(id: number): Promise<void> {
     return this.deleteRoomUseCase.execute(id);
+  }
+
+  async joinRoom(
+    id: number,
+    // userId: number,
+    inviteLink?: string,
+  ): Promise<void> {
+    // return this.joinRoomUseCase.execute(id, userId, inviteLink);
+    return this.joinRoomUseCase.execute(id, inviteLink);
   }
 }

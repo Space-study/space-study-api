@@ -20,6 +20,8 @@ import { MessageEntity } from '../../../../../chats/infrastructure/persistence/r
 
 import { AuthProvidersEnum } from '../../../../../auth/auth-providers.enum';
 import { EntityRelationalHelper } from '../../../../../utils/relational-entity-helper';
+import { ProjectEntity } from '../../../../../projects/infrastructure/persistence/relational/entities/project.entity';
+import { IssueEntity } from '../../../../../issues/infrastructure/persistence/relational/entities/issue.entity';
 
 @Entity({
   name: 'user',
@@ -50,6 +52,15 @@ export class UserEntity extends EntityRelationalHelper {
   @Index()
   @Column({ type: String, nullable: true })
   lastName: string | null;
+
+  @OneToMany(() => ProjectEntity, (project) => project.owner)
+  projects: ProjectEntity[];
+
+  @OneToMany(() => IssueEntity, (issue) => issue.reporter)
+  reportedIssues: IssueEntity[];
+
+  @OneToMany(() => IssueEntity, (issue) => issue.assignee)
+  assignedIssues: IssueEntity[];
 
   @OneToOne(() => FileEntity, {
     eager: true,
