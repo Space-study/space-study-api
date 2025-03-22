@@ -48,6 +48,7 @@ import { ProjectsModule } from './projects/projects.module';
 import { IssueLabelsModule } from './issue-labels/issue-labels.module';
 
 import { IssuesModule } from './issues/issues.module';
+import { PaymentModule } from './payment/payment.module';
 
 @Module({
   imports: [
@@ -139,6 +140,7 @@ import { IssuesModule } from './issues/issues.module';
     BlogCommentModule,
     RoomModule,
     PackageModule,
+    PaymentModule,
   ],
   providers: [
     {
