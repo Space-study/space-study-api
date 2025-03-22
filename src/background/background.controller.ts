@@ -8,6 +8,7 @@ import {
   Param,
   UseInterceptors,
   UploadedFile,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import {
@@ -19,10 +20,8 @@ import {
   ApiNotFoundResponse,
 } from '@nestjs/swagger';
 import { BackgroundService } from './application/services/background.service';
-import { UpdateBackgroundDto } from './application/dto/update-background.dto';
 import { GetBackgroundResponse } from './application/responses/get-background.response';
 import { GetAllBackgroundsResponse } from './application/responses/get-all-backgrounds.response';
-import { UpdateBackgroundResponse } from './application/responses/update-background.response';
 import { Public } from '../auth/decorators/public.decorator';
 
 @Controller({
@@ -37,7 +36,7 @@ export class BackgroundController {
   @Post()
   @ApiConsumes('multipart/form-data')
   @ApiBody({
-    description: 'Music Upload',
+    description: 'Background Upload',
     schema: {
       type: 'object',
       properties: {
@@ -81,16 +80,28 @@ export class BackgroundController {
 
   @Public()
   @Patch(':id')
-  @ApiOkResponse({
-    description: 'Background successfully updated.',
-    type: UpdateBackgroundResponse,
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    description: 'Background Upload',
+    schema: {
+      type: 'object',
+      properties: {
+        file: { type: 'string', format: 'binary' },
+        user_create_id: { type: 'integer' },
+        category_id: { type: 'integer' },
+        title: { type: 'string' },
+        description: { type: 'string' },
+      },
+    },
   })
-  @ApiNotFoundResponse({ description: 'Background not found.' })
+  @ApiCreatedResponse({ description: 'Background successfully created.' })
+  @UseInterceptors(FileInterceptor('file'))
   async update(
-    @Param('id') id: number,
-    @Body() updateBackgroundDto: UpdateBackgroundDto,
+    @Param('id', ParseIntPipe) id: number,
+    @UploadedFile() file: Express.Multer.File,
+    @Body() body: any,
   ) {
-    return this.backgroundService.update(id, updateBackgroundDto);
+    return this.backgroundService.update(id, body, file);
   }
 
   @Public()
