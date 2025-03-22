@@ -9,20 +9,20 @@ export class CreateBackgroundUseCase {
   constructor(
     @Inject('BackgroundRepository')
     private readonly backgroundRepository: BackgroundRepository,
-    private readonly minioService: MinioService, // ✅ MinIO service added
+    private readonly minioService: MinioService,
   ) {}
 
   async execute(
     file: Express.Multer.File,
     createBackgroundDto: CreateBackgroundDto,
   ): Promise<Background> {
-    const fileUrl = await this.minioService.uploadFile(file); // ✅ Upload thumbnail to MinIO
+    const fileUrl = await this.minioService.uploadFile(file);
 
     const background = new Background(
-      0, // ID will be assigned by the database
+      0,
       createBackgroundDto.user_create_id,
       createBackgroundDto.category_id,
-      fileUrl, // ✅ Store MinIO file URL in database
+      fileUrl,
       createBackgroundDto.title,
       createBackgroundDto.description || '',
       new Date(),
