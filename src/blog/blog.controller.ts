@@ -36,7 +36,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
   version: '1',
 })
 export class BlogController {
-  constructor(private readonly blogService: BlogService) { }
+  constructor(private readonly blogService: BlogService) {}
 
   @Post()
   @ApiBearerAuth()

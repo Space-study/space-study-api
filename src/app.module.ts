@@ -43,6 +43,7 @@ const infrastructureDatabaseModule = TypeOrmModule.forRootAsync({
 import { ChatsModule } from './chats/chats.module';
 
 import { PackageModule } from './package/package.module';
+import { IssueModule } from './issue/issue.module';
 
 @Module({
   imports: [
@@ -131,6 +132,7 @@ import { PackageModule } from './package/package.module';
     BlogCommentModule,
     RoomModule,
     PackageModule,
+    IssueModule,
   ],
   providers: [
     {
