@@ -34,4 +34,7 @@ export class RoomOrmEntity {
     default: 'pending',
   })
   status: 'active' | 'ban' | 'pending';
+
+  @Column()
+  invite_link?: string;
 }

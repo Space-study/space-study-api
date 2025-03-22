@@ -33,7 +33,10 @@ export class PackageService {
   }
 
   // Update (Edit)
-  async update(id: number, updatePackageDto: UpdatePackageDto): Promise<Package> {
+  async update(
+    id: number,
+    updatePackageDto: UpdatePackageDto,
+  ): Promise<Package> {
     const pkg = await this.findOne(id);
     Object.assign(pkg, updatePackageDto);
     return await this.packageRepository.save(pkg);

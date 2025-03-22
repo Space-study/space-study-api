@@ -16,20 +16,20 @@ export class UpdateRoomUseCase {
     if (!existingRoom) throw new NotFoundException('Room not found');
 
     const roomUpdate: Partial<Room> = {
-      ...(updateRoomDto.name !== undefined && { name: updateRoomDto.name }),
-      ...(updateRoomDto.privacy !== undefined && {
-        privacy: updateRoomDto.privacy,
-      }),
-      ...(updateRoomDto.maxMembers !== undefined && {
-        maxMembers: updateRoomDto.maxMembers,
-      }),
-      ...(updateRoomDto.category !== undefined && {
-        category: updateRoomDto.category,
-      }),
-      ...(updateRoomDto.status !== undefined && {
-        status: updateRoomDto.status,
-      }), // Add status
-    };
+      ...(updateRoomDto.name !== undefined ? { name: updateRoomDto.name } : {}),
+      ...(updateRoomDto.privacy !== undefined
+        ? { privacy: updateRoomDto.privacy }
+        : {}),
+      ...(updateRoomDto.maxMembers !== undefined
+        ? { maxMembers: updateRoomDto.maxMembers }
+        : {}),
+      ...(updateRoomDto.category !== undefined
+        ? { category: updateRoomDto.category }
+        : {}),
+      ...(updateRoomDto.status !== undefined
+        ? { status: updateRoomDto.status }
+        : {}),
+    } as Partial<Room>;
 
     return this.roomRepository.update(id, roomUpdate);
   }
