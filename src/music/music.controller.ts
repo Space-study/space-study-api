@@ -9,6 +9,7 @@ import {
   Patch,
   UseInterceptors,
   UploadedFile,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { MusicService } from './application/services/music.service';
 import { UpdateMusicDto } from './application/dto/update-music.dto';
@@ -25,6 +26,7 @@ import {
 } from '@nestjs/swagger';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Public } from '../auth/decorators/public.decorator';
+import { Music } from './domain/entities/music.entity';
 
 @Controller({
   path: 'music',
@@ -81,16 +83,27 @@ export class MusicController {
 
   @Public()
   @Patch(':id')
-  @ApiOkResponse({
-    description: 'Music successfully updated.',
-    type: UpdateMusicResponse,
+  @UseInterceptors(FileInterceptor('file'))
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    description: 'Music Upload',
+    schema: {
+      type: 'object',
+      properties: {
+        file: { type: 'string', format: 'binary' },
+        user_create_id: { type: 'integer' },
+        category_id: { type: 'integer' },
+        title: { type: 'string' },
+      },
+    },
   })
   @ApiNotFoundResponse({ description: 'Music not found.' })
   async update(
-    @Param('id') id: number,
-    @Body() updateMusicDto: UpdateMusicDto,
-  ) {
-    return this.musicService.update(id, updateMusicDto);
+    @Param('id', ParseIntPipe) id: number,
+    @UploadedFile() file: Express.Multer.File,
+    @Body() body: any,
+  ): Promise<Music> {
+    return this.musicService.update(id, body, file);
   }
 
   @Public()
