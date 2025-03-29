@@ -1,12 +1,4 @@
-import {
-  Controller,
-  Post,
-  Body,
-  Req,
-  Get,
-  Param,
-  Delete,
-} from '@nestjs/common';
+import { Controller, Post, Body, Req, Get, Param } from '@nestjs/common';
 import { PaymentService } from './payment.service';
 import { CreatePaymentDto } from './dto/create-payment.dto';
 import { Public } from '../auth/decorators/public.decorator';

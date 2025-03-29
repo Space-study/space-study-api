@@ -34,8 +34,17 @@ export class MusicService {
     return this.getMusicUseCase.execute(id);
   }
 
-  async update(id: number, updateMusicDto: UpdateMusicDto): Promise<Music> {
-    return this.updateMusicUseCase.execute(id, updateMusicDto);
+  async update(
+    id: number,
+    body: any,
+    file?: Express.Multer.File,
+  ): Promise<Music> {
+    const updateMusicDto = new UpdateMusicDto();
+    // updateBackgroundDto.user_create_id = Number(body.user_create_id);
+    updateMusicDto.category_id = Number(body.category_id);
+    updateMusicDto.title = body.title;
+
+    return this.updateMusicUseCase.execute(id, updateMusicDto, file);
   }
 
   async delete(id: number): Promise<void> {
