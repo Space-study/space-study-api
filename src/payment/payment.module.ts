@@ -11,5 +11,3 @@ import { Package } from '../package/entities/package.entity';
   providers: [PaymentService],
 })
 export class PaymentModule {}
-
-

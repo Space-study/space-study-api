@@ -38,9 +38,11 @@ export class PaymentService {
   async create(createPaymentDto: CreatePaymentDto) {
     const { email, packageId } = createPaymentDto;
 
-    const pkg = await this.packageRepository.findOneBy({ package_id: packageId });
+    const pkg = await this.packageRepository.findOneBy({
+      package_id: packageId,
+    });
     if (!pkg) throw new NotFoundException('Package not found');
-   
+
     const orderCode = Number(String(Date.now()).slice(-6));
 
     const payLinkRes = await this.payOS.createPaymentLink({
@@ -100,7 +102,10 @@ export class PaymentService {
     const payment = await this.paymentRepository.findOneBy({ orderCode });
     if (!payment) throw new NotFoundException('Order not found');
     if (payment.status === PaymentStatus.COMPLETED) {
-      throw new HttpException('Cannot cancel completed payment', HttpStatus.BAD_REQUEST);
+      throw new HttpException(
+        'Cannot cancel completed payment',
+        HttpStatus.BAD_REQUEST,
+      );
     }
 
     payment.status = PaymentStatus.CANCELLED;
@@ -112,7 +117,10 @@ export class PaymentService {
   async verifyOrder(orderCode: number) {
     const payment = await this.paymentRepository.findOneBy({ orderCode });
     if (!payment || payment.status !== PaymentStatus.COMPLETED) {
-      throw new HttpException('Invalid or unprocessed order', HttpStatus.BAD_REQUEST);
+      throw new HttpException(
+        'Invalid or unprocessed order',
+        HttpStatus.BAD_REQUEST,
+      );
     }
 
     // Placeholder: nâng cấp tài khoản tại đây (gọi userService, nếu có)
