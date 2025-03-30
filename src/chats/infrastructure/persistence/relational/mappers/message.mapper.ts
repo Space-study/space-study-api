@@ -1,15 +1,39 @@
 import { Message } from '../../../../domain/message';
 import { MessageEntity } from '../entities/message.entity';
-import { ChatEntity } from '../entities/chat.entity';
 import { UserEntity } from '../../../../../users/infrastructure/persistence/relational/entities/user.entity';
+import { RoomOrmEntity } from '../../../../../room/infrastructure/persistence/room-om.entity';
+import { User } from '../../../../../users/domain/user';
+import { Room } from '../../../../../room/domain/entities/room.entity';
 
 export class MessageMapper {
   static toDomain(raw: MessageEntity): Message {
     const message = new Message();
     message.id = raw.id;
     message.content = raw.content;
-    message.user = raw.user;
-    message.chat = raw.chat;
+
+    if (raw.user) {
+      const user = new User();
+      user.id = raw.user.id;
+      user.email = raw.user.email;
+      user.firstName = raw.user.firstName;
+      user.lastName = raw.user.lastName;
+      message.user = user;
+    }
+
+    message.rooms = (raw.rooms || []).map((roomEntity) => {
+      return new Room(
+        Number(roomEntity.id),
+        roomEntity.name,
+        roomEntity.privacy,
+        roomEntity.max_members,
+        roomEntity.image_url,
+        roomEntity.category,
+        roomEntity.created_at,
+        roomEntity.status,
+        roomEntity.invite_link || '',
+      );
+    });
+
     message.createdAt = raw.createdAt;
     message.updatedAt = raw.updatedAt;
     return message;
@@ -21,11 +45,21 @@ export class MessageMapper {
       entity.id = message.id;
     }
 
-    // Ensure content is explicitly set
     entity.content = message.content;
 
-    entity.user = message.user as UserEntity;
-    entity.chat = message.chat as ChatEntity;
+    if (message.user) {
+      const userEntity = new UserEntity();
+      userEntity.id = Number(message.user.id);
+      entity.user = userEntity;
+    }
+
+    entity.rooms = message.rooms
+      ? message.rooms.map((room) => {
+          const roomEntity = new RoomOrmEntity();
+          roomEntity.id = room.getId();
+          return roomEntity;
+        })
+      : [];
 
     if (message.createdAt) {
       entity.createdAt = message.createdAt;

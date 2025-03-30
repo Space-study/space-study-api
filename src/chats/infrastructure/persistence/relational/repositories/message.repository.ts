@@ -9,66 +9,45 @@ import { NullableType } from '../../../../../utils/types/nullable.type';
 import { IPaginationOptions } from '../../../../../utils/types/pagination-options';
 
 @Injectable()
-export class MessageRelationalRepository implements MessageRepository {
+export class MessageRelationalRepository extends MessageRepository {
   constructor(
     @InjectRepository(MessageEntity)
     private readonly messageRepository: Repository<MessageEntity>,
-  ) {}
+  ) {
+    super();
+  }
 
   async create(data: Message): Promise<Message> {
-    try {
-      console.log(
-        'Creating message in repository:',
-        JSON.stringify({
-          content: data.content,
-          chatId: data.chat?.id,
-          userId: data.user?.id,
-        }),
-      );
+    const persistenceModel = MessageMapper.toPersistence(data);
 
-      const persistenceModel = MessageMapper.toPersistence(data);
-
-      // Ensure content is not null
-      if (!persistenceModel.content) {
-        console.error('Message content is null or empty');
-        throw new Error('Message content cannot be null');
-      }
-
-      console.log(
-        'Persistence model created:',
-        JSON.stringify({
-          content: persistenceModel.content,
-          chatId: persistenceModel.chat?.id,
-          userId: persistenceModel.user?.id,
-        }),
-      );
-
-      const newEntity = await this.messageRepository.save(
-        this.messageRepository.create(persistenceModel),
-      );
-
-      console.log('Message saved to database with ID:', newEntity.id);
-
-      return MessageMapper.toDomain(newEntity);
-    } catch (error) {
-      console.error('Error creating message in repository:', error);
-      throw error;
+    if (!persistenceModel.content) {
+      throw new Error('Message content cannot be null');
     }
+
+    const newEntity = await this.messageRepository.save(
+      this.messageRepository.create(persistenceModel),
+    );
+
+    return MessageMapper.toDomain(newEntity);
   }
 
   async findById(id: Message['id']): Promise<NullableType<Message>> {
     const entity = await this.messageRepository.findOne({
       where: { id },
+      relations: ['rooms'],
     });
 
     return entity ? MessageMapper.toDomain(entity) : null;
   }
 
-  async findByChatId(chatId: string): Promise<Message[]> {
-    const entities = await this.messageRepository.find({
-      where: { chat: { id: chatId } },
-      order: { createdAt: 'ASC' },
-    });
+  async findByRoomId(roomId: number): Promise<Message[]> {
+    const entities = await this.messageRepository
+      .createQueryBuilder('message')
+      .leftJoinAndSelect('message.rooms', 'room')
+      .leftJoinAndSelect('message.user', 'user')
+      .where('room.id = :roomId', { roomId })
+      .orderBy('message.createdAt', 'ASC')
+      .getMany();
 
     return entities.map((entity) => MessageMapper.toDomain(entity));
   }
@@ -76,6 +55,7 @@ export class MessageRelationalRepository implements MessageRepository {
   async update(id: Message['id'], payload: Partial<Message>): Promise<Message> {
     const entity = await this.messageRepository.findOne({
       where: { id },
+      relations: ['rooms'],
     });
 
     if (!entity) {
@@ -98,17 +78,20 @@ export class MessageRelationalRepository implements MessageRepository {
     await this.messageRepository.delete(id);
   }
 
-  async findByChatIdWithPagination(
-    chatId: string,
+  async findByRoomIdWithPagination(
+    roomId: number,
     paginationOptions: IPaginationOptions,
   ): Promise<[Message[], number]> {
-    const [entities, total] = await this.messageRepository.findAndCount({
-      where: { chat: { id: chatId } },
-      order: { createdAt: 'DESC' }, // Most recent messages first
-      skip: (paginationOptions.page - 1) * paginationOptions.limit,
-      take: paginationOptions.limit,
-      relations: ['user'], // Include user information
-    });
+    const queryBuilder = this.messageRepository
+      .createQueryBuilder('message')
+      .leftJoinAndSelect('message.rooms', 'room')
+      .leftJoinAndSelect('message.user', 'user')
+      .where('room.id = :roomId', { roomId })
+      .orderBy('message.createdAt', 'DESC')
+      .skip((paginationOptions.page - 1) * paginationOptions.limit)
+      .take(paginationOptions.limit);
+
+    const [entities, total] = await queryBuilder.getManyAndCount();
 
     return [entities.map((entity) => MessageMapper.toDomain(entity)), total];
   }

@@ -21,7 +21,13 @@ export class Package {
   @Column({ type: 'text', nullable: false })
   description: string;
 
-  @Column({ type: 'int', precision: 10, scale: 2, nullable: false })
+  @Column({
+    type: 'numeric',
+    precision: 10,
+    scale: 2,
+    nullable: false,
+    default: 0,
+  })
   price: number;
 
   @Column({ type: 'int', nullable: false })

@@ -1,17 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-
-import { FindOptionsWhere, Repository, In } from 'typeorm';
-import { UserEntity } from '../entities/user.entity';
-import { NullableType } from '../../../../../utils/types/nullable.type';
-import { FilterUserDto, SortUserDto } from '../../../../dto/query-user.dto';
+import { Repository, FindOptionsWhere, In } from 'typeorm';
+import { IPaginationOptions } from '../../../../../utils/types/pagination-options';
 import { User } from '../../../../domain/user';
 import { UserRepository } from '../../user.repository';
+import { UserEntity } from '../entities/user.entity';
 import { UserMapper } from '../mappers/user.mapper';
-import { IPaginationOptions } from '../../../../../utils/types/pagination-options';
-import { ChatMapper } from '../../../../../chats/infrastructure/persistence/relational/mappers/chat.mapper';
+import { NullableType } from '../../../../../utils/types/nullable.type';
+import { FilterUserDto, SortUserDto } from '../../../../dto/query-user.dto';
 import { MessageMapper } from '../../../../../chats/infrastructure/persistence/relational/mappers/message.mapper';
-import { Chat } from '../../../../../chats/domain/chat';
 import { Message } from '../../../../../chats/domain/message';
 
 @Injectable()
@@ -39,16 +36,13 @@ export class UsersRelationalRepository implements UserRepository {
     paginationOptions: IPaginationOptions;
   }): Promise<User[]> {
     const where: FindOptionsWhere<UserEntity> = {};
+
     if (filterOptions?.roles?.length) {
-      where.role = filterOptions.roles.map((role) => ({
-        id: Number(role.id),
-      }));
+      where.role = In(filterOptions.roles);
     }
 
     const entities = await this.usersRepository.find({
-      skip: (paginationOptions.page - 1) * paginationOptions.limit,
-      take: paginationOptions.limit,
-      where: where,
+      where,
       order: sortOptions?.reduce(
         (accumulator, sort) => ({
           ...accumulator,
@@ -56,9 +50,11 @@ export class UsersRelationalRepository implements UserRepository {
         }),
         {},
       ),
+      skip: (paginationOptions.page - 1) * paginationOptions.limit,
+      take: paginationOptions.limit,
     });
 
-    return entities.map((user) => UserMapper.toDomain(user));
+    return entities.map((entity) => UserMapper.toDomain(entity));
   }
 
   async findById(id: User['id']): Promise<NullableType<User>> {
@@ -71,17 +67,17 @@ export class UsersRelationalRepository implements UserRepository {
 
   async findByIds(ids: User['id'][]): Promise<User[]> {
     const entities = await this.usersRepository.find({
-      where: { id: In(ids) },
+      where: { id: In(ids.map((id) => Number(id))) },
     });
 
-    return entities.map((user) => UserMapper.toDomain(user));
+    return entities.map((entity) => UserMapper.toDomain(entity));
   }
 
   async findByEmail(email: User['email']): Promise<NullableType<User>> {
     if (!email) return null;
 
     const entity = await this.usersRepository.findOne({
-      where: { email },
+      where: { email: email.toLowerCase() },
     });
 
     return entity ? UserMapper.toDomain(entity) : null;
@@ -94,10 +90,10 @@ export class UsersRelationalRepository implements UserRepository {
     socialId: User['socialId'];
     provider: User['provider'];
   }): Promise<NullableType<User>> {
-    if (!socialId || !provider) return null;
+    if (!socialId) return null;
 
     const entity = await this.usersRepository.findOne({
-      where: { socialId, provider },
+      where: { socialId, provider } as FindOptionsWhere<UserEntity>,
     });
 
     return entity ? UserMapper.toDomain(entity) : null;
@@ -128,16 +124,6 @@ export class UsersRelationalRepository implements UserRepository {
     await this.usersRepository.softDelete(id);
   }
 
-  async findUserChats(userId: User['id']): Promise<Chat[]> {
-    const user = await this.usersRepository.findOne({
-      where: { id: Number(userId) },
-      relations: ['participatedChats'],
-    });
-    return (
-      user?.participatedChats?.map((chat) => ChatMapper.toDomain(chat)) || []
-    );
-  }
-
   async findUserMessages(userId: User['id']): Promise<Message[]> {
     const user = await this.usersRepository.findOne({
       where: { id: Number(userId) },
@@ -146,13 +132,5 @@ export class UsersRelationalRepository implements UserRepository {
     return (
       user?.messages?.map((message) => MessageMapper.toDomain(message)) || []
     );
-  }
-
-  async findUserOwnedChats(userId: User['id']): Promise<Chat[]> {
-    const user = await this.usersRepository.findOne({
-      where: { id: Number(userId) },
-      relations: ['ownedChats'],
-    });
-    return user?.ownedChats?.map((chat) => ChatMapper.toDomain(chat)) || [];
   }
 }

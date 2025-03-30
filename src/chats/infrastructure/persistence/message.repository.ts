@@ -10,16 +10,16 @@ export abstract class MessageRepository {
 
   abstract findById(id: Message['id']): Promise<NullableType<Message>>;
 
-  abstract findByChatId(
-    chatId: string,
+  abstract findByRoomId(
+    roomId: number,
     options?: {
       limit?: number;
       before?: Date;
     },
   ): Promise<Message[]>;
 
-  abstract findByChatIdWithPagination(
-    chatId: string,
+  abstract findByRoomIdWithPagination(
+    roomId: number,
     paginationOptions: IPaginationOptions,
   ): Promise<[Message[], number]>;
 

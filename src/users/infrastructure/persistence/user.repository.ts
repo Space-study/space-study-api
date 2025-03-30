@@ -1,4 +1,3 @@
-import { Chat } from '../../../chats/domain/chat';
 import { Message } from '../../../chats/domain/message';
 import { DeepPartial } from '../../../utils/types/deep-partial.type';
 import { NullableType } from '../../../utils/types/nullable.type';
@@ -40,7 +39,5 @@ export abstract class UserRepository {
 
   abstract remove(id: User['id']): Promise<void>;
 
-  abstract findUserChats(userId: User['id']): Promise<Chat[]>;
   abstract findUserMessages(userId: User['id']): Promise<Message[]>;
-  abstract findUserOwnedChats(userId: User['id']): Promise<Chat[]>;
 }

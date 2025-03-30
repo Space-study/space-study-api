@@ -1,3 +1,5 @@
+import { Message } from '../../../chats/domain/message';
+
 export class Room {
   constructor(
     private readonly id: number,
@@ -11,6 +13,12 @@ export class Room {
     private readonly invite_link: string,
   ) {}
 
+  private messages: Message[];
+
+  getId(): number {
+    return this.id;
+  }
+
   getPrivacy(): 'public' | 'private' {
     return this.privacy;
   }
@@ -21,5 +29,20 @@ export class Room {
 
   getMaxMembers(): number {
     return this.maxMembers;
+  }
+
+  public getMessages(): Message[] {
+    return this.messages;
+  }
+
+  public setMessages(messages: Message[]): void {
+    this.messages = messages;
+  }
+
+  public addMessage(message: Message): void {
+    if (!this.messages) {
+      this.messages = [];
+    }
+    this.messages.push(message);
   }
 }
