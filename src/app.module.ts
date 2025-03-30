@@ -49,6 +49,7 @@ import { IssueLabelsModule } from './issue-labels/issue-labels.module';
 
 import { IssuesModule } from './issues/issues.module';
 import { PaymentModule } from './payment/payment.module';
+import { ReportIssueModule } from './report_issue/report_issue.module';
 
 @Module({
   imports: [
@@ -141,6 +142,7 @@ import { PaymentModule } from './payment/payment.module';
     RoomModule,
     PackageModule,
     PaymentModule,
+    ReportIssueModule,
   ],
   providers: [
     {
