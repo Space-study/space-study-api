@@ -62,6 +62,7 @@
     "@opentelemetry/resources": "^1.28.0",
     "@opentelemetry/sdk-node": "^0.55.0",
     "@opentelemetry/sdk-trace-web": "^1.28.0",
+    "@payos/node": "^1.0.10",
     "@types/multer-s3": "3.0.3",
     "@types/passport-google-oauth20": "^2.0.16",
     "@types/passport-local": "^1.0.38",
