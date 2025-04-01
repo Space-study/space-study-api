@@ -13,6 +13,7 @@ export class MessageService {
     content: string;
     rooms: Room[];
     user: User;
+    isAiGenerated?: boolean;
   }): Promise<Message> {
     if (!data.content) {
       throw new Error('Message content is required');
@@ -30,6 +31,7 @@ export class MessageService {
     message.content = data.content;
     message.rooms = data.rooms;
     message.user = data.user;
+    message.isAiGenerated = data.isAiGenerated || false;
 
     return this.messageRepository.create(message);
   }

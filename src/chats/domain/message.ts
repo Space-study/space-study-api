@@ -19,6 +19,9 @@ export class Message {
   @ApiProperty({ type: () => [Room] })
   rooms: Room[];
 
+  @ApiProperty({ type: Boolean, required: false })
+  isAiGenerated?: boolean;
+
   @ApiProperty()
   createdAt: Date;
 

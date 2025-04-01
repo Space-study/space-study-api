@@ -10,6 +10,7 @@ export class MessageMapper {
     const message = new Message();
     message.id = raw.id;
     message.content = raw.content;
+    message.isAiGenerated = raw.isAiGenerated || false;
 
     if (raw.user) {
       const user = new User();
@@ -46,6 +47,10 @@ export class MessageMapper {
     }
 
     entity.content = message.content;
+    entity.isAiGenerated =
+      typeof message.isAiGenerated === 'boolean'
+        ? message.isAiGenerated
+        : false;
 
     if (message.user) {
       const userEntity = new UserEntity();

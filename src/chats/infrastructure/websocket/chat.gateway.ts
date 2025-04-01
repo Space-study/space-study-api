@@ -110,21 +110,27 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @SubscribeMessage('sendMessage')
   async handleMessage(
     @ConnectedSocket() client: Socket,
-    @WsAuthUser() user: User,
     @MessageBody() rawPayload: any,
   ) {
     try {
+      console.log('Raw message received:', typeof rawPayload, rawPayload);
+
+      // Parse the payload if it's a string
       let payload;
       if (typeof rawPayload === 'string') {
         try {
           payload = JSON.parse(rawPayload);
-        } catch {
+          console.log('Parsed string payload:', payload);
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        } catch (e) {
           if (rawPayload.includes('"data":')) {
             const dataMatch = rawPayload.match(/"data"\s*:\s*({.*})/);
             if (dataMatch && dataMatch[1]) {
               try {
                 payload = JSON.parse(dataMatch[1]);
-              } catch {
+                console.log('Parsed data section:', payload);
+              } catch (e2) {
+                console.error('Failed to parse data section:', e2);
                 return { error: 'Invalid JSON format in message data' };
               }
             }
@@ -134,34 +140,78 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         }
       } else {
         payload = rawPayload.data ? rawPayload.data : rawPayload;
+        console.log('Using raw payload:', payload);
       }
 
+      // Get user from socket data
+      const user = client.data.user;
+      if (!user || !user.id) {
+        console.error('No user found for message:', user);
+        return { error: 'User not authenticated' };
+      }
+
+      // Validate payload
       if (!payload || !payload.roomId || !payload.content) {
+        console.log('Invalid payload:', JSON.stringify(payload));
         return {
           error: 'Invalid message data. Both roomId and content are required.',
         };
       }
 
-      if (!user || !user.id) {
-        return { error: 'User not authenticated' };
-      }
-
+      console.log('Finding room:', payload.roomId);
       const room = await this.roomService.findById(Number(payload.roomId));
       if (!room) {
+        console.log('Room not found:', payload.roomId);
         return { error: 'Room not found' };
       }
+
+      // Log image-specific data if present
+      if (
+        typeof payload.content === 'string' &&
+        payload.content.includes('data:image')
+      ) {
+        console.log('Image detected in message');
+        console.log('Image data length:', payload.content.length);
+        console.log('Image format:', payload.content.split(';')[0]);
+      }
+
+      // Check if the message is AI generated
+      const isAiGenerated = payload.isAiGenerated === true;
+      if (isAiGenerated) {
+        console.log('Message marked as AI generated');
+      }
+
+      // Create message
+      console.log('Creating message in room:', room.getId(), {
+        contentType: typeof payload.content,
+        contentLength: payload.content.length,
+        userId: user.id,
+        roomId: room.getId(),
+        isAiGenerated,
+      });
 
       const message = await this.messageService.create({
         content: payload.content,
         rooms: [room],
         user: user,
+        isAiGenerated,
+      });
+
+      console.log('Message created successfully:', {
+        messageId: message.id,
+        timestamp: message.createdAt,
+        roomId: room.getId(),
+        contentLength: message.content.length,
+        isAiGenerated: message.isAiGenerated,
       });
 
       const roomName = this.getRoomChannelName(room);
       this.server.to(roomName).emit('newMessage', message);
+      console.log('Message broadcast to room:', roomName);
 
       return message;
     } catch (error) {
+      console.error('Error processing message:', error);
       return {
         error: 'Failed to send message',
         message: error instanceof Error ? error.message : String(error),

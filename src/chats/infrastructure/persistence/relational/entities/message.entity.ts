@@ -29,7 +29,7 @@ export class MessageEntity extends EntityRelationalHelper {
 
   @ManyToMany(() => RoomOrmEntity, (room) => room.messages)
   @JoinTable({
-    name: 'chat_participants',
+    name: 'message_rooms',
     joinColumn: {
       name: 'message_id',
       referencedColumnName: 'id',
@@ -40,6 +40,9 @@ export class MessageEntity extends EntityRelationalHelper {
     },
   })
   rooms: RoomOrmEntity[];
+
+  @Column({ nullable: true })
+  isAiGenerated: boolean;
 
   @CreateDateColumn()
   createdAt: Date;
