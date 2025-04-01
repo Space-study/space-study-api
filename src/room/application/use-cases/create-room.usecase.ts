@@ -30,6 +30,7 @@ export class CreateRoomUseCase {
       new Date(),
       createRoomDto.status || 'pending',
       createRoomDto.privacy === 'private' ? uuidv4() : null,
+      createRoomDto.ownerId,
     );
 
     return this.roomRepository.create(room);

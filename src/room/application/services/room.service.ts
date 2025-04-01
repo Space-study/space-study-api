@@ -4,6 +4,7 @@ import { DeleteRoomUseCase } from '../use-cases/delete-room.usecase';
 import { GetRoomUseCase } from '../use-cases/get-room.usecase';
 import { UpdateRoomUseCase } from '../use-cases/update-room.usecase';
 import { JoinRoomUseCase } from '../use-cases/join-room.usecase';
+import { GetRoomByUserIdUseCase } from '../use-cases/get-room-by-userid.usecase';
 import { CreateRoomDto } from '../dto/create-room.dto';
 import { UpdateRoomDto } from '../dto/update-room.dto';
 import { Room } from '../../domain/entities/room.entity';
@@ -16,6 +17,7 @@ export class RoomService {
     private readonly getRoomUseCase: GetRoomUseCase,
     private readonly updateRoomUseCase: UpdateRoomUseCase,
     private readonly joinRoomUseCase: JoinRoomUseCase,
+    private readonly findUserByIdUseCase: GetRoomByUserIdUseCase,
   ) {}
 
   async create(file: Express.Multer.File, body: any): Promise<Room> {
@@ -24,6 +26,7 @@ export class RoomService {
     createRoomDto.privacy = body.privacy;
     createRoomDto.maxMembers = Number(body.maxMembers);
     createRoomDto.category = body.category;
+    createRoomDto.ownerId = Number(body.ownerId);
 
     return this.createRoomUseCase.execute(file, createRoomDto);
   }
@@ -34,6 +37,10 @@ export class RoomService {
 
   async findById(id: number): Promise<Room> {
     return this.getRoomUseCase.execute(id);
+  }
+
+  async findByUserId(id: number): Promise<Room> {
+    return this.findUserByIdUseCase.execute(id);
   }
 
   async update(id: number, updateRoomDto: UpdateRoomDto): Promise<Room> {

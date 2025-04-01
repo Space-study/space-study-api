@@ -46,4 +46,13 @@ export class UpdateRoomDto {
   @IsOptional()
   @IsEnum(['active', 'ban', 'pending'])
   status?: 'active' | 'ban' | 'pending';
+
+  @ApiPropertyOptional({
+    example: 1,
+    description: 'The ID of the user who owns the room',
+    type: Number,
+  })
+  @IsOptional()
+  @IsNumber()
+  ownerId?: number;
 }

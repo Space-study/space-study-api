@@ -32,6 +32,7 @@ export class MessageMapper {
         roomEntity.created_at,
         roomEntity.status,
         roomEntity.invite_link || '',
+        roomEntity.owner_id || 0,
       );
     });
 

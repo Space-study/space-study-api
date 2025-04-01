@@ -11,12 +11,17 @@ export class Room {
     private readonly createdAt: Date,
     private readonly status: 'active' | 'ban' | 'pending' = 'pending',
     private readonly invite_link: string,
+    private readonly ownerId: number,
   ) {}
 
   private messages: Message[];
 
   getId(): number {
     return this.id;
+  }
+
+  getOwnerId(): number {
+    return this.ownerId;
   }
 
   getPrivacy(): 'public' | 'private' {

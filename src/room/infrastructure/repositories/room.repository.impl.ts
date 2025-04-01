@@ -23,6 +23,7 @@ export class RoomRepositoryImpl implements RoomRepository {
       created_at: room['createdAt'],
       status: room['status'],
       invite_link: room['privacy'] === 'private' ? uuidv4() : '',
+      owner_id: room['ownerId'],
     });
 
     const saved = await this.repo.save(roomOrmEntity);
@@ -37,7 +38,13 @@ export class RoomRepositoryImpl implements RoomRepository {
       saved.created_at,
       saved.status,
       saved.invite_link ?? '',
+      saved.owner_id,
     );
+  }
+
+  async findByUserId(id: number): Promise<Room | null> {
+    const room = await this.repo.findOne({ where: { owner_id: id } });
+    return room ? this.mapToDomain(room) : null;
   }
 
   async findById(id: number): Promise<Room | null> {
@@ -61,6 +68,7 @@ export class RoomRepositoryImpl implements RoomRepository {
     if (room['status'] !== undefined) updateData.status = room['status'];
     if (room['inviteLink'] !== undefined)
       updateData.invite_link = room['inviteLink'] ?? '';
+    if (room['ownerId'] !== undefined) updateData.owner_id = room['ownerId'];
 
     await this.repo.update(id, updateData);
     const updatedRoom = await this.findById(id);
@@ -83,6 +91,7 @@ export class RoomRepositoryImpl implements RoomRepository {
       roomOrm.created_at,
       roomOrm.status,
       roomOrm.invite_link ?? '',
+      roomOrm.owner_id,
     );
   }
 }

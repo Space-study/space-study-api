@@ -55,6 +55,7 @@ export class RoomController {
         privacy: { type: 'string', enum: ['public', 'private'] },
         maxMembers: { type: 'integer' },
         category: { type: 'string' },
+        ownerId: { type: 'integer' },
       },
     },
   })
@@ -89,6 +90,17 @@ export class RoomController {
   }
 
   @Public()
+  @Get('user/:id')
+  @ApiOkResponse({
+    description: 'Successfully retrieved the room record.',
+    type: GetRoomResponse,
+  })
+  @ApiNotFoundResponse({ description: 'Room not found.' })
+  async findRoomByUserId(@Param('id') id: number) {
+    return this.roomService.findByUserId(id);
+  }
+
+  @Public()
   @Patch(':id')
   @ApiConsumes('multipart/form-data')
   @ApiBody({
@@ -111,6 +123,7 @@ export class RoomController {
           enum: ['active', 'ban', 'pending'],
           nullable: true,
         },
+        ownerId: { type: 'integer', nullable: true },
       },
     },
   })
@@ -134,6 +147,7 @@ export class RoomController {
         category: body.category?.trim() || undefined,
         status: body.status || undefined,
         imageUrl: file ? `/uploads/${file.filename}` : undefined,
+        ownerId: body.ownerId ? Number(body.ownerId) : undefined,
       }).filter(([value]) => value !== undefined),
     );
 

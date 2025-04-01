@@ -3,6 +3,14 @@ import { IsEnum, IsNumber, IsString, IsOptional } from 'class-validator';
 
 export class CreateRoomDto {
   @ApiProperty({
+    example: 1,
+    description: 'The ID of the user who owns the room',
+    type: Number,
+  })
+  @IsNumber()
+  ownerId: number;
+
+  @ApiProperty({
     example: 'My Room',
     description: 'The name of the room',
     type: String,

@@ -42,6 +42,9 @@ export class RoomOrmEntity {
   @Column({ nullable: true })
   invite_link?: string;
 
+  @Column({ nullable: true })
+  owner_id: number;
+
   @OneToMany(() => ProjectEntity, (project) => project.room)
   projects: ProjectEntity[];
 
