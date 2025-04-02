@@ -50,6 +50,8 @@ import { IssueLabelsModule } from './issue-labels/issue-labels.module';
 import { IssuesModule } from './issues/issues.module';
 import { PaymentModule } from './payment/payment.module';
 import { ReportIssueModule } from './report_issue/report_issue.module';
+import { VoucherModule } from './voucher/voucher.module';
+import { UserpackageModule } from './userpackage/userpackage.module';
 
 @Module({
   imports: [
@@ -143,6 +145,8 @@ import { ReportIssueModule } from './report_issue/report_issue.module';
     PackageModule,
     PaymentModule,
     ReportIssueModule,
+    VoucherModule,
+    UserpackageModule,
   ],
   providers: [
     {
