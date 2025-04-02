@@ -11,6 +11,7 @@ import { CreatePaymentDto } from './dto/create-payment.dto';
 import { Package } from '../package/entities/package.entity';
 import PayOS from '@payos/node';
 import * as crypto from 'crypto';
+import { Voucher } from '../voucher/entities/voucher.entity';
 
 @Injectable()
 export class PaymentService {
@@ -23,6 +24,8 @@ export class PaymentService {
     private paymentRepository: Repository<Payment>,
     @InjectRepository(Package)
     private packageRepository: Repository<Package>,
+    @InjectRepository(Voucher)
+    private voucherRepository: Repository<Voucher>,
   ) {
     this.payOS = new PayOS(
       process.env.PAYOS_CLIENT_ID!,
@@ -36,18 +39,42 @@ export class PaymentService {
   }
 
   async create(createPaymentDto: CreatePaymentDto) {
-    const { email, packageId } = createPaymentDto;
+    const { email, packageId, voucherCode } = createPaymentDto;
 
     const pkg = await this.packageRepository.findOneBy({
       package_id: packageId,
     });
     if (!pkg) throw new NotFoundException('Package not found');
 
+    let finalPrice = pkg.price;
+
+    if (voucherCode) {
+      const voucher = await this.voucherRepository.findOneBy({
+        code: voucherCode,
+      });
+
+      if (!voucher) {
+        throw new NotFoundException('Voucher not found');
+      }
+
+      const now = new Date();
+      const expiry = new Date(voucher.expiry_date);
+
+      if (!voucher.is_active || expiry <= now) {
+        throw new HttpException(
+          'Voucher expired or inactive',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      finalPrice = finalPrice * (1 - voucher.discount_percentage / 100);
+    }
+
     const orderCode = Number(String(Date.now()).slice(-6));
 
     const payLinkRes = await this.payOS.createPaymentLink({
       orderCode,
-      amount: Math.round(pkg.price),
+      amount: Math.round(finalPrice),
       description: pkg.name,
       returnUrl: this.returnUrl,
       cancelUrl: this.cancelUrl,

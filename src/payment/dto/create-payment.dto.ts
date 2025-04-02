@@ -1,4 +1,4 @@
-import { IsEmail, IsNumber } from 'class-validator';
+import { IsEmail, IsNumber, IsOptional, IsString } from 'class-validator';
 
 export class CreatePaymentDto {
   @IsNumber()
@@ -6,4 +6,8 @@ export class CreatePaymentDto {
 
   @IsEmail()
   email: string;
+
+  @IsOptional()
+  @IsString()
+  voucherCode?: string;
 }

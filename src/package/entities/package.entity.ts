@@ -18,8 +18,8 @@ export class Package {
   @Column()
   name: string;
 
-  @Column({ type: 'text', nullable: false })
-  description: string;
+  @Column()
+  description?: string;
 
   @Column({
     type: 'numeric',
@@ -30,7 +30,7 @@ export class Package {
   })
   price: number;
 
-  @Column({ type: 'int', nullable: false })
+  @Column()
   duration: number;
 
   @CreateDateColumn()
